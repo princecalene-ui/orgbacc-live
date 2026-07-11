@@ -125,6 +125,56 @@
   }
 
   #result-zone{display:none}
+
+  /* ─── HISTORIQUE ─── */
+  .history-card{
+    margin-top:26px;background:var(--card-bg);border:1px solid var(--border);
+    border-radius:6px;padding:18px 16px 20px;
+  }
+  .history-head{
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;
+  }
+  .history-title{
+    font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:.14em;color:var(--gold);
+  }
+  .btn-clear-hist{
+    background:none;border:1px solid var(--border);color:var(--ivory-dim);
+    font-family:'Rajdhani',sans-serif;font-size:.72rem;letter-spacing:.08em;
+    padding:5px 10px;border-radius:3px;cursor:pointer;text-transform:uppercase;
+  }
+  .btn-clear-hist:hover{border-color:var(--crimson);color:var(--crimson)}
+  .history-stats{
+    display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;font-size:.78rem;
+    color:var(--ivory-dim);letter-spacing:.04em;
+  }
+  .history-stats b{color:var(--ivory);font-weight:700}
+  .history-stats .stat-ok b{color:var(--green-ok)}
+  .history-stats .stat-ko b{color:var(--red)}
+  .history-empty{color:var(--ivory-dim);font-size:.82rem;text-align:center;padding:14px 0}
+  .history-list{display:flex;flex-direction:column;gap:8px}
+  .history-item{
+    display:flex;align-items:center;gap:10px;background:var(--deep);
+    border:1px solid var(--border);border-radius:4px;padding:9px 10px;
+    font-family:'Courier Prime',monospace;font-size:.82rem;
+  }
+  .history-item.status-valid{border-color:var(--green-ok)}
+  .history-item.status-invalid{border-color:var(--crimson)}
+  .hist-num{color:var(--gold);font-weight:700;min-width:64px}
+  .hist-suit{font-size:1rem;min-width:22px;text-align:center}
+  .hist-label{color:var(--ivory);flex:1;font-size:.78rem}
+  .hist-tag{font-size:.65rem;color:var(--ivory-dim);letter-spacing:.06em}
+  .hist-actions{display:flex;gap:6px}
+  .hist-btn{
+    width:30px;height:30px;border-radius:4px;border:1px solid var(--border);
+    background:var(--card-bg);color:var(--ivory-dim);cursor:pointer;font-size:.95rem;
+    display:flex;align-items:center;justify-content:center;transition:all .15s;
+  }
+  .hist-btn.valid-btn:hover,.hist-btn.valid-btn.active{
+    border-color:var(--green-ok);color:var(--green-ok);background:#2d6a4f22;
+  }
+  .hist-btn.invalid-btn:hover,.hist-btn.invalid-btn.active{
+    border-color:var(--crimson);color:var(--red);background:#cc444422;
+  }
   .result-card{
     background:var(--card-bg);border:1px solid var(--border);border-top:2px solid var(--gold);
     border-radius:4px;padding:28px 22px 22px;position:relative;
@@ -343,6 +393,15 @@
       <div class="details-body" id="details-body"></div>
     </div>
   </div>
+
+  <div class="history-card" id="history-card">
+    <div class="history-head">
+      <span class="history-title">◆ HISTORIQUE DES PRÉDICTIONS ◆</span>
+      <button class="btn-clear-hist" id="btn-clear-hist" onclick="clearHistory()">Effacer</button>
+    </div>
+    <div class="history-stats" id="history-stats"></div>
+    <div class="history-list" id="history-list"></div>
+  </div>
 </main>
 
 <footer>ORG BACC COMBO · X_Code · ♠️ ♥️ ♣️ ♦️</footer>
@@ -354,6 +413,90 @@
 let allInverseActive = false;
 let allInverseManual = false;  // true = toggled manually, false = driven by auto-milieu
 let lastCalcResult   = null;
+
+// ══════════════════════════════════════════════════════
+//  HISTORIQUE DES PRÉDICTIONS (persisté localStorage)
+// ══════════════════════════════════════════════════════
+const HIST_KEY = 'orgbacc_history_v1';
+
+function loadHistory(){
+  try{
+    const raw = localStorage.getItem(HIST_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function saveHistory(list){
+  try{ localStorage.setItem(HIST_KEY, JSON.stringify(list)); }catch(e){}
+}
+
+function addHistoryEntry(gameNum, suitKey, suitLabel, modeTag){
+  const list = loadHistory();
+  list.unshift({
+    id: Date.now() + '-' + Math.random().toString(36).slice(2,7),
+    gameNum, suitKey, suitLabel, modeTag,
+    status: null, // null=en attente | 'valid' | 'invalid'
+    ts: new Date().toISOString()
+  });
+  saveHistory(list);
+  renderHistory();
+}
+
+function setHistoryStatus(id, status){
+  const list = loadHistory();
+  const entry = list.find(e=>e.id===id);
+  if(!entry) return;
+  entry.status = (entry.status === status) ? null : status; // re-cliquer annule
+  saveHistory(list);
+  renderHistory();
+}
+
+function clearHistory(){
+  if(!confirm('Effacer tout l\'historique des prédictions ?')) return;
+  saveHistory([]);
+  renderHistory();
+}
+
+function renderHistory(){
+  const list = loadHistory();
+  const listBox = document.getElementById('history-list');
+  const statsBox = document.getElementById('history-stats');
+  if(!listBox || !statsBox) return;
+
+  const total = list.length;
+  const valid = list.filter(e=>e.status==='valid').length;
+  const invalid = list.filter(e=>e.status==='invalid').length;
+  const pending = total - valid - invalid;
+  const rate = (valid+invalid)>0 ? Math.round(valid/(valid+invalid)*100) : null;
+
+  statsBox.innerHTML = total===0 ? '' : `
+    <span>Total : <b>${total}</b></span>
+    <span class="stat-ok">Validées : <b>${valid}</b></span>
+    <span class="stat-ko">Ratées : <b>${invalid}</b></span>
+    <span>En attente : <b>${pending}</b></span>
+    ${rate!==null ? `<span>Taux de réussite : <b>${rate}%</b></span>` : ''}
+  `;
+
+  if(total===0){
+    listBox.innerHTML = '<div class="history-empty">Aucune prédiction enregistrée pour le moment.</div>';
+    return;
+  }
+
+  listBox.innerHTML = list.map(e=>{
+    const statusClass = e.status==='valid' ? 'status-valid' : (e.status==='invalid' ? 'status-invalid' : '');
+    const emoji = SUIT_EMOJI[e.suitKey] || '';
+    const red = isRed(e.suitKey);
+    return `
+    <div class="history-item ${statusClass}">
+      <span class="hist-num">#N${e.gameNum}</span>
+      <span class="hist-suit" style="color:${red?'#cc4444':'var(--ivory)'}">${emoji}</span>
+      <span class="hist-label">${e.suitLabel}${e.modeTag?` <span class="hist-tag">${e.modeTag}</span>`:''}</span>
+      <div class="hist-actions">
+        <button class="hist-btn valid-btn ${e.status==='valid'?'active':''}" title="Validée chez le joueur" onclick="setHistoryStatus('${e.id}','valid')">✓</button>
+        <button class="hist-btn invalid-btn ${e.status==='invalid'?'active':''}" title="Non passée" onclick="setHistoryStatus('${e.id}','invalid')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 // ══════════════════════════════════════════════════════
 //  CONSTANTES
@@ -864,6 +1007,8 @@ function renderResult(r){
     `<span style="color:${red?'#cc4444':'var(--ivory)'}">${SUIT_EMOJI[displaySuit]||displaySuit}</span>`;
   document.getElementById('res-suit-label').textContent=SUIT_NAMES[displaySuit]||displaySuit;
 
+  addHistoryEntry(r.nextNum, displaySuit, SUIT_NAMES[displaySuit]||displaySuit, allInverseActive?'ALL INVERSE':'');
+
   // Banner ALL INVERSE
   const banner = document.getElementById('allinv-banner');
   if(allInverseActive && allInvInfo){
@@ -1086,6 +1231,7 @@ function toggleLiveAutoRefresh(){
 
 window.addEventListener('load', ()=>{
   fetchLatestTelegramGame(true);
+  renderHistory();
 });
 
 </script>
