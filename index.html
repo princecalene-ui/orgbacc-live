@@ -212,9 +212,12 @@
     animation:pulse-glow 2.5s ease-in-out infinite;
   }
   @keyframes pulse-glow{0%,100%{filter:drop-shadow(0 0 20px #c9a84c55)}50%{filter:drop-shadow(0 0 40px #c9a84caa)}}
-  .prediction-suit-label{
+  .prediction-side{
     text-align:center;font-family:'Cinzel',serif;font-size:clamp(1.8rem,8vw,3rem);font-weight:900;
     color:var(--gold);letter-spacing:.15em;margin-bottom:12px;
+  }
+  .prediction-side .side-tag{
+    display:inline-block;padding:2px 16px;border:2px solid var(--gold);border-radius:4px;
   }
 
   /* Badge ALL INVERSE actif sous la prédiction */
@@ -249,6 +252,8 @@
   .badge-row{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
   .badge{border-radius:3px;padding:9px 14px;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;text-align:center}
 
+  .badge-side{background:linear-gradient(135deg,#1a1000,#2a1c00);border:1px solid #a67c1a;border-left:3px solid #e0a83a;color:#f0c070;font-weight:700;animation:flicker-side 3s ease-in-out infinite;}
+  @keyframes flicker-side{0%,100%{box-shadow:0 0 10px #e0a83a44}50%{box-shadow:0 0 22px #e0a83a88}}
   .badge-selector{background:linear-gradient(135deg,#0a1a0a,#122012);border:1px solid #2a6a2a;border-left:3px solid #4caf50;color:#80e080;animation:flicker-green 3s ease-in-out infinite;}
   @keyframes flicker-green{0%,100%{box-shadow:0 0 8px #4caf5044}50%{box-shadow:0 0 18px #4caf5088}}
   .badge-algo{background:linear-gradient(135deg,#120f00,#261f05);border:1px solid #8a6c18;border-left:3px solid #e0bf59;color:#f1d57a;animation:flicker-gold 3s ease-in-out infinite;}
@@ -422,7 +427,7 @@
     <div class="result-card">
       <div class="next-game-num" id="res-num"></div>
       <div class="prediction-suit" id="res-suit-emoji"></div>
-      <div class="prediction-suit-label" id="res-suit-label"></div>
+      <div class="prediction-side" id="res-side"></div>
       <div class="allinv-active-banner" id="allinv-banner"></div>
       <div class="copy-row">
         <button class="btn-copy" id="btn-copy" onclick="copyPrediction()">⧉ COPIER LA PRÉDICTION</button>
@@ -474,31 +479,35 @@ function saveHistory(list){
   try{ localStorage.setItem(HIST_KEY, JSON.stringify(list)); }catch(e){}
 }
 
-function addHistoryEntry(gameNum, suitKey, suitLabel, modeTag, brainInfo){
+// Une seule entrée par numéro de jeu prédit : si elle existe déjà et est encore
+// en attente, on la met à jour (pas de doublon) ; si elle est déjà résolue, on n'y touche pas ;
+// sinon on la crée.
+function upsertHistoryEntry(gameNum, suitKey, side, modeTag, brainInfo){
   const list = loadHistory();
+  const existing = list.find(e=>e.gameNum===gameNum);
+  const brainBase = brainInfo && brainInfo.triggered ? brainInfo.baseSuit : null;
+  const brainReason = brainInfo && brainInfo.triggered ? brainInfo.reason : null;
+
+  if(existing){
+    if(existing.status===null){
+      existing.suitKey = suitKey;
+      existing.side = side;
+      existing.modeTag = modeTag;
+      existing.baseSuit = brainBase;
+      existing.brainReason = brainReason;
+      saveHistory(list);
+      renderHistory();
+    }
+    return;
+  }
+
   list.unshift({
     id: Date.now() + '-' + Math.random().toString(36).slice(2,7),
-    gameNum, suitKey, suitLabel, modeTag,
-    baseSuit: brainInfo && brainInfo.triggered ? brainInfo.baseSuit : null,
-    brainReason: brainInfo && brainInfo.triggered ? brainInfo.reason : null,
+    gameNum, suitKey, side, modeTag,
+    baseSuit: brainBase, brainReason,
     status: null, // null=en attente | 'valid' | 'invalid'
     ts: new Date().toISOString()
   });
-  saveHistory(list);
-  renderHistory();
-}
-
-// Met à jour l'entrée en attente correspondante au lieu d'en créer une nouvelle
-// (utilisé quand un toggle — ALL INVERSE / CERVEAU — recalcule l'affichage sans nouveau jeu saisi)
-function updateLatestPendingEntry(gameNum, suitKey, suitLabel, modeTag, brainInfo){
-  const list = loadHistory();
-  const entry = list.find(e=>e.gameNum===gameNum && e.status===null);
-  if(!entry){ addHistoryEntry(gameNum, suitKey, suitLabel, modeTag, brainInfo); return; }
-  entry.suitKey = suitKey;
-  entry.suitLabel = suitLabel;
-  entry.modeTag = modeTag;
-  entry.baseSuit = brainInfo && brainInfo.triggered ? brainInfo.baseSuit : null;
-  entry.brainReason = brainInfo && brainInfo.triggered ? brainInfo.reason : null;
   saveHistory(list);
   renderHistory();
 }
@@ -519,12 +528,15 @@ function clearHistory(){
 }
 
 // ── Résout automatiquement la prédiction en attente pour ce numéro de jeu ──
-// en comparant la couleur prédite aux cartes réellement sorties dans la 1ère parenthèse.
-function resolvePendingHistory(gameNum, p1Cards){
+// en comparant la couleur prédite aux cartes réellement sorties dans la bonne
+// parenthèse : 1ère (Joueur/P1) ou 2ème (Banquier/P2) selon l'attribution faite.
+function resolvePendingHistory(gameNum, p1Cards, p2Cards){
   const list = loadHistory();
   const entry = list.find(e=>e.gameNum===gameNum && e.status===null);
-  if(!entry || !p1Cards || !p1Cards.length) return null;
-  const actualSuits = new Set(p1Cards.map(c=>c.suit));
+  if(!entry) return null;
+  const cards = entry.side==='P2' ? p2Cards : p1Cards;
+  if(!cards || !cards.length) return null;
+  const actualSuits = new Set(cards.map(c=>c.suit));
   entry.status = actualSuits.has(entry.suitKey) ? 'valid' : 'invalid';
   entry.autoResolved = true;
   entry.actualSuits = [...actualSuits];
@@ -538,9 +550,10 @@ function showAutoValidationFeedback(entry){
   if(!box) return;
   if(!entry){ box.textContent=''; box.style.display='none'; return; }
   const ok = entry.status==='valid';
+  const sideLabel = entry.side==='P2' ? '2ème parenthèse (Banquier/P2)' : '1ère parenthèse (Joueur/P1)';
   box.textContent = ok
-    ? `✓ Auto-validé : #N${entry.gameNum} ${SUIT_EMOJI[entry.suitKey]} a été trouvée dans la 1ère parenthèse — prédiction réussie.`
-    : `✕ Auto-validé : #N${entry.gameNum} ${SUIT_EMOJI[entry.suitKey]} absente de la 1ère parenthèse — prédiction échouée.`;
+    ? `✓ Auto-validé : #N${entry.gameNum} ${SUIT_EMOJI[entry.suitKey]} ${entry.side} trouvée dans la ${sideLabel} — prédiction réussie.`
+    : `✕ Auto-validé : #N${entry.gameNum} ${SUIT_EMOJI[entry.suitKey]} ${entry.side} absente de la ${sideLabel} — prédiction échouée.`;
   box.className = 'history-autoval show ' + (ok ? 'ok' : 'ko');
   box.style.display = 'block';
   setTimeout(()=>{ box.style.display='none'; }, 8000);
@@ -641,7 +654,7 @@ function renderHistory(){
     <div class="history-item ${statusClass}">
       <span class="hist-num">#N${e.gameNum}</span>
       <span class="hist-suit" style="color:${red?'#cc4444':'var(--ivory)'}">${emoji}</span>
-      <span class="hist-label">${e.suitLabel}${e.baseSuit?` <span class="hist-tag hist-brain">🧠 ${SUIT_EMOJI[e.baseSuit]}→${SUIT_EMOJI[e.suitKey]}</span>`:''}${e.modeTag?` <span class="hist-tag">${e.modeTag}</span>`:''}${e.autoResolved?` <span class="hist-tag">auto</span>`:''}</span>
+      <span class="hist-label">${e.side}${e.baseSuit?` <span class="hist-tag hist-brain">🧠</span>`:''}${e.autoResolved?` <span class="hist-tag">auto</span>`:''}</span>
       <div class="hist-actions">
         <button class="hist-btn valid-btn ${e.status==='valid'?'active':''}" title="Validée chez le joueur" onclick="setHistoryStatus('${e.id}','valid')">✓</button>
         <button class="hist-btn invalid-btn ${e.status==='invalid'?'active':''}" title="Non passée" onclick="setHistoryStatus('${e.id}','invalid')">✕</button>
@@ -656,6 +669,18 @@ function renderHistory(){
 const SUIT_EMOJI = {'♠️':'♠️','♥️':'♥️','♦️':'♦️','♣️':'♣️'};
 const SUIT_NAMES = {'♠️':'PIQUE','♥️':'COEUR','♦️':'CARREAU','♣️':'TRÈFLE'};
 function isRed(s){ return s==='♥️'||s==='♦️'; }
+
+// ── Attribution P1 (Joueur) / P2 (Banquier) selon les 2 derniers chiffres du n° de jeu ──
+function computeSide(avantDernier, dernierDigit){
+  const avantImpair = (avantDernier % 2 !== 0);
+  const dernierBas  = (dernierDigit >= 1 && dernierDigit <= 5); // 1 à 5
+  // dernierDigit 0,6,7,8,9 = "haut" (6 à 0)
+  if(avantImpair){
+    return dernierBas ? 'P1' : 'P2';
+  } else {
+    return dernierBas ? 'P2' : 'P1';
+  }
+}
 
 // ══════════════════════════════════════════════════════
 //  AUTO MILIEU → décide si ALL INVERSE doit être ON/OFF
@@ -745,7 +770,7 @@ function toggleAllInverse(){
   allInverseManual = true;  // marquer comme choix manuel
   allInverseActive = !allInverseActive;
   updateAllInverseUI();
-  if(lastCalcResult) renderResult(lastCalcResult, false);
+  if(lastCalcResult) renderResult(lastCalcResult);
 }
 
 function setAllInverseAuto(state){
@@ -767,7 +792,7 @@ function toggleBrain(){
   const status = document.getElementById('brain-status');
   btn.classList.toggle('active', brainActive);
   status.textContent = brainActive ? 'ON' : 'OFF';
-  if(lastCalcResult) renderResult(lastCalcResult, false);
+  if(lastCalcResult) renderResult(lastCalcResult);
 }
 
 // ══════════════════════════════════════════════════════
@@ -1131,7 +1156,7 @@ function calculate(){
       lastCalcResult=r;
 
       // ── Auto-validation de la prédiction précédente en attente ──
-      const autoVal = resolvePendingHistory(r.num, r.p1);
+      const autoVal = resolvePendingHistory(r.num, r.p1, r.p2);
       showAutoValidationFeedback(autoVal);
 
       // ── AUTO MILIEU : pilote le bouton ALL INVERSE ──
@@ -1148,14 +1173,14 @@ function calculate(){
         autoBadge.className = 'auto-mode-badge';
       }
 
-      renderResult(r, true);
+      renderResult(r);
       document.getElementById('game-input').value='';
     }catch(e){showError(e.message);}
     btn.classList.remove('loading');btn.textContent='⬡ CALCULER LA PRÉDICTION ⬡';
   },300);
 }
 
-function renderResult(r, isNewCalc){
+function renderResult(r){
   const ar=r.algoResult;
 
   // ── Calcul ALL INVERSE (post-prédiction, si actif) ──
@@ -1176,18 +1201,15 @@ function renderResult(r, isNewCalc){
     }
   }
 
+  const side = computeSide(r.avantDernier, r.dernierDigit);
+
   document.getElementById('res-num').textContent=`#N${r.nextNum}`;
   const red=isRed(displaySuit);
   document.getElementById('res-suit-emoji').innerHTML=
     `<span style="color:${red?'#cc4444':'var(--ivory)'}">${SUIT_EMOJI[displaySuit]||displaySuit}</span>`;
-  document.getElementById('res-suit-label').textContent=SUIT_NAMES[displaySuit]||displaySuit;
+  document.getElementById('res-side').innerHTML=`<span class="side-tag">${side}</span>`;
 
-  const histModeTag = allInverseActive ? 'ALL INVERSE' : '';
-  if(isNewCalc){
-    addHistoryEntry(r.nextNum, displaySuit, SUIT_NAMES[displaySuit]||displaySuit, histModeTag, brainInfo);
-  } else {
-    updateLatestPendingEntry(r.nextNum, displaySuit, SUIT_NAMES[displaySuit]||displaySuit, histModeTag, brainInfo);
-  }
+  upsertHistoryEntry(r.nextNum, displaySuit, side, '', brainInfo);
 
   // Banner ALL INVERSE
   const banner = document.getElementById('allinv-banner');
@@ -1214,6 +1236,7 @@ function renderResult(r, isNewCalc){
   }
 
   const badges=[
+    `<div class="badge badge-side">${side==='P1'?'👤':'🏦'} ATTRIBUTION — Av-dern=${r.avantDernier}(${r.avantDernier%2!==0?'IMPAIR':'PAIR'}) · Dernier=${r.dernierDigit}(${(r.dernierDigit>=1&&r.dernierDigit<=5)?'1-5':'6-0'}) → ${side==='P1'?'P1 (JOUEUR)':'P2 (BANQUIER)'}</div>`,
     `<div class="badge badge-selector">🎯 SÉLECTEUR — ${selectorLine}</div>`,
     `<div class="badge badge-algo">⚙ ALGO ${r.algoUsed} — BASE : ALGO ${ar.baseAlgo} · ${fibOverrideLabel} → ALGO FINAL : ALGO ${ar.algo}</div>`,
     `<div class="badge badge-parity">◈ PARITÉ — ALGO ${algoParity} · #N${r.nextNum} RÉDUIT = ${ar.reduceSteps.join(' → ')} → ${numParity}</div>`,
@@ -1347,10 +1370,9 @@ ${r.milieuRule.active?`<div class="det-row"><span class="det-label" style="color
 
 function copyPrediction(){
   const num=document.getElementById('res-num').textContent;
-  const suit=document.getElementById('res-suit-label').textContent;
-  const emoji=Object.entries(SUIT_NAMES).find(([,v])=>v===suit)?.[0]||'';
-  const modeTag=allInverseActive?' [ALL INVERSE]':'';
-  navigator.clipboard.writeText(`${num} ${emoji} ${suit}${modeTag}`).then(()=>{
+  const side=document.getElementById('res-side').textContent;
+  const emoji=document.getElementById('res-suit-emoji').textContent;
+  navigator.clipboard.writeText(`${num}${emoji}${side}`).then(()=>{
     const btn=document.getElementById('btn-copy');
     btn.textContent='✓ COPIÉ';btn.classList.add('copied');
     setTimeout(()=>{btn.textContent='⧉ COPIER LA PRÉDICTION';btn.classList.remove('copied');},1800);
@@ -1392,7 +1414,9 @@ async function fetchLatestTelegramGame(silent=false){
     const isNew = liveLastMessageId !== data.message_id;
     liveLastMessageId = data.message_id;
     setLiveStatus(`Canal synchronisé · ${isNew ? 'nouveau jeu détecté' : 'dernier jeu confirmé'} · #N${data.game_number}`);
-    calculate();
+    if(isNew || !silent){
+      calculate();
+    }
   }catch(err){
     setLiveStatus(`Erreur de synchronisation Telegram : ${err.message}`);
   }finally{
