@@ -252,6 +252,8 @@
   .badge-row{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
   .badge{border-radius:3px;padding:9px 14px;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;text-align:center}
 
+  .badge-range2{background:linear-gradient(135deg,#001a14,#00281e);border:1px solid #1a8a6a;border-left:3px solid #2ee0aa;color:#7ff0cc;font-weight:700;animation:flicker-range2 3s ease-in-out infinite;}
+  @keyframes flicker-range2{0%,100%{box-shadow:0 0 8px #2ee0aa44}50%{box-shadow:0 0 18px #2ee0aa88}}
   .badge-side{background:linear-gradient(135deg,#1a1000,#2a1c00);border:1px solid #a67c1a;border-left:3px solid #e0a83a;color:#f0c070;font-weight:700;animation:flicker-side 3s ease-in-out infinite;}
   @keyframes flicker-side{0%,100%{box-shadow:0 0 10px #e0a83a44}50%{box-shadow:0 0 22px #e0a83a88}}
   .badge-selector{background:linear-gradient(135deg,#0a1a0a,#122012);border:1px solid #2a6a2a;border-left:3px solid #4caf50;color:#80e080;animation:flicker-green 3s ease-in-out infinite;}
@@ -671,6 +673,16 @@ const SUIT_NAMES = {'♠️':'PIQUE','♥️':'COEUR','♦️':'CARREAU','♣️
 function isRed(s){ return s==='♥️'||s==='♦️'; }
 
 // ── Attribution P1 (Joueur) / P2 (Banquier) selon les 2 derniers chiffres du n° de jeu ──
+// ── ALGORITHME 2 : inversion automatique pour les n° de jeu 900 à 1441 ──
+// ♣️↔♥️ et ♠️↔♦️
+const RANGE_INV_MAP = {'♣️':'♥️','♥️':'♣️','♠️':'♦️','♦️':'♠️'};
+function applyRangeInverse(suit, nextNum){
+  const inRange = (nextNum >= 900 && nextNum <= 1441);
+  if(!inRange) return {applied:false, before:suit, after:suit};
+  const after = RANGE_INV_MAP[suit] || suit;
+  return {applied:true, before:suit, after};
+}
+
 function computeSide(avantDernier, dernierDigit){
   const avantImpair = (avantDernier % 2 !== 0);
   const dernierBas  = (dernierDigit >= 1 && dernierDigit <= 5); // 1 à 5
@@ -1183,11 +1195,15 @@ function calculate(){
 function renderResult(r){
   const ar=r.algoResult;
 
-  // ── Calcul ALL INVERSE (post-prédiction, si actif) ──
+  // ── ALGORITHME 2 : inversion automatique pour n° de jeu 900-1441 ──
   let displaySuit = r.finalSuit;
+  const rangeInvInfo = applyRangeInverse(displaySuit, r.nextNum);
+  if(rangeInvInfo.applied) displaySuit = rangeInvInfo.after;
+
+  // ── Calcul ALL INVERSE (post-prédiction, si actif) ──
   let allInvInfo  = null;
   if(allInverseActive){
-    allInvInfo = applyAllInverse(r.finalSuit, r.avantDernier, r.nextH);
+    allInvInfo = applyAllInverse(displaySuit, r.avantDernier, r.nextH);
     displaySuit = allInvInfo.result;
   }
 
@@ -1236,6 +1252,7 @@ function renderResult(r){
   }
 
   const badges=[
+    `<div class="badge badge-range2">${rangeInvInfo.applied?'🔀':'⬛'} ALGO 2 (900-1441) — #N${r.nextNum} ${rangeInvInfo.applied?`DANS LA PLAGE → INVERSION ${SUIT_EMOJI[rangeInvInfo.before]} → ${SUIT_EMOJI[rangeInvInfo.after]}`:'HORS PLAGE — INACTIF'}</div>`,
     `<div class="badge badge-side">${side==='P1'?'👤':'🏦'} ATTRIBUTION — Av-dern=${r.avantDernier}(${r.avantDernier%2!==0?'IMPAIR':'PAIR'}) · Dernier=${r.dernierDigit}(${(r.dernierDigit>=1&&r.dernierDigit<=5)?'1-5':'6-0'}) → ${side==='P1'?'P1 (JOUEUR)':'P2 (BANQUIER)'}</div>`,
     `<div class="badge badge-selector">🎯 SÉLECTEUR — ${selectorLine}</div>`,
     `<div class="badge badge-algo">⚙ ALGO ${r.algoUsed} — BASE : ALGO ${ar.baseAlgo} · ${fibOverrideLabel} → ALGO FINAL : ALGO ${ar.algo}</div>`,
