@@ -136,6 +136,10 @@
     background:#1a0808;border:1px solid #5a1010;border-left:3px solid #cc2222;border-radius:3px;
     padding:12px 16px;font-size:.85rem;color:#e06060;margin-top:16px;display:none;
   }
+  .wait-box{
+    background:#0d1a1f;border:1px solid #123a45;border-left:3px solid #2a9d8f;border-radius:3px;
+    padding:12px 16px;font-size:.85rem;color:#7fd8cc;margin-top:16px;display:none;line-height:1.5;
+  }
 
   #result-zone{display:none}
 
@@ -393,6 +397,7 @@
     <textarea id="game-input"
       placeholder="Ex: #N1283. ✅8(7♠️A♣️) - 6(6♦️Q♣️) #T14 🔵 #R"></textarea>
     <div class="error-box" id="error-box"></div>
+    <div class="wait-box" id="wait-box"></div>
     <button class="btn-calc" id="btn-calc" onclick="calculate()">⬡ CALCULER LA PRÉDICTION ⬡</button>
   </div>
 
@@ -418,7 +423,7 @@
         <div class="toggle-track"><div class="toggle-thumb"></div></div>
         <div class="allinv-label-wrap">
           <span class="allinv-title">🧠 CERVEAU INTELLIGENT</span>
-          <span class="allinv-rule">Analyse les 10 derniers jeux résolus · bascule la prédiction si dérive détectée (3 échecs d'affilée ou taux &lt;30%)</span>
+          <span class="allinv-rule">Analyse les 10 derniers jeux RÉELS (canal Telegram) · bascule la prédiction si dérive détectée (3 absences d'affilée ou taux réel &lt;30%)</span>
         </div>
         <span class="allinv-status" id="brain-status">ON</span>
       </button>
@@ -481,6 +486,54 @@ function saveHistory(list){
   try{ localStorage.setItem(HIST_KEY, JSON.stringify(list)); }catch(e){}
 }
 
+function setHistoryStatus(id, status){
+  const list = loadHistory();
+  const entry = list.find(e=>e.id===id);
+  if(!entry) return;
+  entry.status = (entry.status === status) ? null : status; // re-cliquer annule
+  saveHistory(list);
+  renderHistory();
+}
+
+function clearHistory(){
+  if(!confirm('Effacer tout l\'historique des prédictions ?')) return;
+  saveHistory([]);
+  renderHistory();
+}
+
+// ══════════════════════════════════════════════════════
+//  HISTORIQUE DES JEUX RÉELS (issus du canal Telegram / saisie)
+//  → C'est CETTE base que le CERVEAU INTELLIGENT utilise désormais,
+//    et non plus le taux de réussite de ses propres prédictions.
+// ══════════════════════════════════════════════════════
+const ACTUAL_KEY = 'orgbacc_actual_games_v1';
+
+function loadActualGames(){
+  try{
+    const raw = localStorage.getItem(ACTUAL_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function saveActualGames(list){
+  try{ localStorage.setItem(ACTUAL_KEY, JSON.stringify(list)); }catch(e){}
+}
+
+// Enregistre le résultat RÉEL d'un jeu déjà joué (celui saisi/synchronisé depuis
+// Telegram comme "jeu précédent"), avec les couleurs réellement sorties côté
+// Joueur (P1) et Banquier (P2). Sert de vérité terrain pour le cerveau.
+function recordActualGame(gameNum, p1Cards, p2Cards){
+  const list = loadActualGames();
+  const p1Suits = [...new Set((p1Cards||[]).map(c=>c.suit))];
+  const p2Suits = [...new Set((p2Cards||[]).map(c=>c.suit))];
+  const idx = list.findIndex(g=>g.gameNum===gameNum);
+  const entry = {gameNum, p1Suits, p2Suits, ts:new Date().toISOString()};
+  if(idx>=0) list[idx]=entry; else list.unshift(entry);
+  list.sort((a,b)=>b.gameNum-a.gameNum);
+  const trimmed = list.slice(0,200); // large marge, le cerveau ne lit que les N derniers
+  saveActualGames(trimmed);
+  return trimmed;
+}
+
 // Une seule entrée par numéro de jeu prédit : si elle existe déjà et est encore
 // en attente, on la met à jour (pas de doublon) ; si elle est déjà résolue, on n'y touche pas ;
 // sinon on la crée.
@@ -511,21 +564,6 @@ function upsertHistoryEntry(gameNum, suitKey, side, modeTag, brainInfo){
     ts: new Date().toISOString()
   });
   saveHistory(list);
-  renderHistory();
-}
-
-function setHistoryStatus(id, status){
-  const list = loadHistory();
-  const entry = list.find(e=>e.id===id);
-  if(!entry) return;
-  entry.status = (entry.status === status) ? null : status; // re-cliquer annule
-  saveHistory(list);
-  renderHistory();
-}
-
-function clearHistory(){
-  if(!confirm('Effacer tout l\'historique des prédictions ?')) return;
-  saveHistory([]);
   renderHistory();
 }
 
@@ -561,57 +599,69 @@ function showAutoValidationFeedback(entry){
   setTimeout(()=>{ box.style.display='none'; }, 8000);
 }
 
-// ── CERVEAU INTELLIGENT ──
-// Analyse les 10 dernières prédictions résolues (auto ou manuel) et décide
-// si la couleur candidate doit être remplacée par une couleur plus fiable en ce moment.
-function computeBrainDecision(candidateSuit){
+// ── CERVEAU INTELLIGENT (v2 — basé sur les résultats RÉELS) ──
+// Analyse les N derniers jeux réellement joués (issus du canal Telegram / saisie),
+// et non plus le taux de réussite des prédictions faites par l'outil.
+// Pour le "side" concerné (P1/Joueur ou P2/Banquier), on regarde quelles couleurs
+// sont réellement sorties, et on détecte une dérive sur la couleur candidate.
+function computeBrainDecision(candidateSuit, side){
   const SUITS = ['♠️','♥️','♦️','♣️'];
-  const recent = loadHistory().filter(e=>e.status!==null).slice(0,10); // plus récent en premier
+  const N = 10;
+  const games = loadActualGames().slice(0, N); // du plus récent au plus ancien
 
   const perSuit = {};
-  SUITS.forEach(s=>perSuit[s]={total:0,valid:0});
-  recent.forEach(e=>{
-    if(!perSuit[e.suitKey]) return;
-    perSuit[e.suitKey].total++;
-    if(e.status==='valid') perSuit[e.suitKey].valid++;
+  SUITS.forEach(s=>perSuit[s]={total:0,hits:0});
+
+  games.forEach(g=>{
+    const suits = side==='P2' ? g.p2Suits : g.p1Suits;
+    if(!suits || !suits.length) return;
+    SUITS.forEach(s=>{
+      perSuit[s].total++;
+      if(suits.includes(s)) perSuit[s].hits++;
+    });
   });
 
-  // Échecs consécutifs sur la couleur candidate (dans l'ordre du plus récent au plus ancien)
+  // Absences consécutives RÉELLES de la couleur candidate (côté concerné),
+  // du jeu réel le plus récent vers le plus ancien.
   let consecutiveMisses = 0;
-  for(const e of recent){
-    if(e.suitKey !== candidateSuit) continue;
-    if(e.status==='invalid'){ consecutiveMisses++; } else { break; }
+  for(const g of games){
+    const suits = side==='P2' ? g.p2Suits : g.p1Suits;
+    if(!suits || !suits.length) continue;
+    if(!suits.includes(candidateSuit)){ consecutiveMisses++; } else { break; }
   }
 
-  const candStats = perSuit[candidateSuit] || {total:0,valid:0};
-  const candRate  = candStats.total>0 ? candStats.valid/candStats.total : null;
+  const candStats = perSuit[candidateSuit] || {total:0,hits:0};
+  const candRate  = candStats.total>0 ? candStats.hits/candStats.total : null;
 
   const triggerConsecutive = consecutiveMisses >= 3;
   const triggerRate = (candStats.total >= 3 && candRate !== null && candRate < 0.30);
 
   if(!triggerConsecutive && !triggerRate){
-    return {triggered:false, perSuit, consecutiveMisses, candRate};
+    return {triggered:false, perSuit, consecutiveMisses, candRate, sampleSize:games.length, side};
   }
 
-  // Cherche la meilleure couleur alternative (taux de réussite récent le plus élevé, échantillon suffisant)
+  // Cherche la meilleure couleur alternative (taux réel d'apparition le plus élevé
+  // sur ce côté, échantillon suffisant pour être fiable)
   let best = null;
   SUITS.forEach(s=>{
     if(s===candidateSuit) return;
     const st = perSuit[s];
-    if(st.total < 2) return; // échantillon trop faible pour être fiable
-    const rate = st.valid/st.total;
+    if(st.total < 2) return;
+    const rate = st.hits/st.total;
     if(!best || rate > best.rate || (rate===best.rate && st.total>best.total)){
       best = {suit:s, rate, total:st.total};
     }
   });
 
   if(!best){
-    return {triggered:false, perSuit, consecutiveMisses, candRate, reason:'Dérive détectée mais pas assez de données sur les autres couleurs pour basculer en sécurité.'};
+    return {triggered:false, perSuit, consecutiveMisses, candRate, sampleSize:games.length, side,
+      reason:'Dérive détectée dans les résultats réels mais échantillon insuffisant sur les autres couleurs pour basculer en sécurité.'};
   }
 
+  const sideLabel = side==='P2' ? 'Banquier/P2' : 'Joueur/P1';
   const reasonParts = [];
-  if(triggerConsecutive) reasonParts.push(`${consecutiveMisses} échecs d'affilée sur ${SUIT_EMOJI[candidateSuit]}`);
-  if(triggerRate) reasonParts.push(`taux ${Math.round(candRate*100)}% sur ${candStats.total} derniers ${SUIT_EMOJI[candidateSuit]}`);
+  if(triggerConsecutive) reasonParts.push(`${consecutiveMisses} jeux réels d'affilée sans ${SUIT_EMOJI[candidateSuit]} côté ${sideLabel}`);
+  if(triggerRate) reasonParts.push(`taux réel ${Math.round(candRate*100)}% sur ${candStats.total} derniers jeux (${sideLabel})`);
 
   return {
     triggered:true,
@@ -619,7 +669,7 @@ function computeBrainDecision(candidateSuit){
     overrideRate: best.rate,
     overrideSample: best.total,
     reason: reasonParts.join(' + '),
-    perSuit, consecutiveMisses, candRate
+    perSuit, consecutiveMisses, candRate, sampleSize:games.length, side
   };
 }
 
@@ -846,6 +896,51 @@ function parseGame(raw){
   }
   return {num,p1,p2};
 }
+// ══════════════════════════════════════════════════════
+//  STATUT DU JEU — symboles ⏰ (jeu en cours) et ▶ (côté en attente)
+//
+//  RÈGLES :
+//  1) Ni ⏰ ni ▶ présents            → jeu TERMINÉ, données exploitables.
+//  2) ⏰ + ▶ présents, ▶ côté P2      → Banquier en attente de décision,
+//                                       mais données déjà exploitables.
+//  3) ⏰ + ▶ présents, ▶ côté P1      → Joueur peut encore tirer une 3ème carte,
+//                                       données PAS exploitables tant que le ▶
+//                                       n'est pas passé côté P2 ou n'a pas disparu.
+// ══════════════════════════════════════════════════════
+function locateArrowSide(raw){
+  const hasClock = /⏰/.test(raw);
+  const hasArrow = /▶/.test(raw);
+  if(!hasArrow) return {hasClock, hasArrow, arrowSide:null};
+  const matches = [...raw.matchAll(/\(([^)]+)\)/g)];
+  if(matches.length < 2) return {hasClock, hasArrow, arrowSide:null};
+  const g1Start = matches[0].index;
+  const g1End   = matches[0].index + matches[0][0].length;
+  const g2Start = matches[1].index;
+  const segBeforeG1 = raw.slice(0, g1Start);
+  const segBeforeG2 = raw.slice(g1End, g2Start);
+  if(/▶/.test(segBeforeG2)) return {hasClock, hasArrow, arrowSide:'P2'};
+  if(/▶/.test(segBeforeG1)) return {hasClock, hasArrow, arrowSide:'P1'};
+  return {hasClock, hasArrow, arrowSide:null};
+}
+
+function checkGameUsability(raw){
+  const info = locateArrowSide(raw);
+  if(!info.hasArrow){
+    return {usable:true, status:'TERMINE', info,
+      message:"Aucun symbole ⏰/▶ détecté → jeu terminé, données exploitables."};
+  }
+  if(info.arrowSide==='P2'){
+    return {usable:true, status:'EN_COURS_P2', info,
+      message:"⏰/▶ détectés, ▶ situé côté Banquier (P2) → Banquier encore en attente de décision, mais données déjà exploitables pour la prédiction."};
+  }
+  if(info.arrowSide==='P1'){
+    return {usable:false, status:'EN_COURS_P1', info,
+      message:"⏰/▶ détectés, ▶ situé côté Joueur (P1) → le Joueur peut encore tirer une 3ème carte. Réessayez une fois que le ▶ sera passé côté Banquier (P2) ou aura disparu."};
+  }
+  return {usable:false, status:'INDETERMINE', info,
+    message:"Symbole ▶ détecté mais sa position n'a pas pu être déterminée avec certitude → données non utilisées par prudence."};
+}
+
 function numToTime(n){
   const total=n-1;
   const h=Math.floor(total/60)%24;
@@ -1083,6 +1178,11 @@ function runV5(num, p1Cards, p2Cards, nextNum){
 // ══════════════════════════════════════════════════════
 function runCalc(raw){
   const {num,p1,p2}=parseGame(raw);
+
+  // Le jeu fourni est un jeu déjà JOUÉ (résultat réel, issu de la saisie / du canal
+  // Telegram). On l'enregistre dans la base de vérité terrain utilisée par le cerveau.
+  recordActualGame(num, p1, p2);
+
   const nextNum=num+1;
   const nextH=Math.floor((nextNum-1)/60)%24;
   const nextM=(nextNum-1)%60;
@@ -1155,16 +1255,33 @@ function runCalc(raw){
 // ══════════════════════════════════════════════════════
 function showError(msg){const b=document.getElementById('error-box');b.textContent='⚠ '+msg;b.style.display='block';}
 function hideError(){document.getElementById('error-box').style.display='none';}
+function showWait(msg){const b=document.getElementById('wait-box');b.textContent='⏳ '+msg;b.style.display='block';}
+function hideWait(){const b=document.getElementById('wait-box');if(b) b.style.display='none';}
 
 function calculate(){
   hideError();
+  hideWait();
   const raw=document.getElementById('game-input').value.trim();
   if(!raw){showError("Veuillez saisir les données du jeu précédent.");return;}
+
+  // ── Vérification du statut du jeu (symboles ⏰ / ▶) ──
+  // Si le jeu n'est pas encore exploitable (▶ côté Joueur/P1), on affiche un
+  // message d'attente et on ne calcule rien tant que la situation n'a pas évolué.
+  let usability;
+  try{
+    usability = checkGameUsability(raw);
+  }catch(e){ usability = {usable:true, status:'TERMINE', message:''}; }
+  if(!usability.usable){
+    showWait(usability.message);
+    return;
+  }
+
   const btn=document.getElementById('btn-calc');
   btn.classList.add('loading');btn.textContent='⟳ CALCUL EN COURS…';
   setTimeout(()=>{
     try{
       const r=runCalc(raw);
+      r.usability = usability;
       lastCalcResult=r;
 
       // ── Auto-validation de la prédiction précédente en attente ──
@@ -1207,17 +1324,20 @@ function renderResult(r){
     displaySuit = allInvInfo.result;
   }
 
+  // ── Attribution P1/P2 (nécessaire AVANT le cerveau, qui analyse par côté) ──
+  const side = computeSide(r.avantDernier, r.dernierDigit);
+
   // ── CERVEAU INTELLIGENT (dernière couche, après tout le reste) ──
+  // Basé sur les résultats RÉELS des jeux passés (canal Telegram), pas sur
+  // le taux de réussite des prédictions de l'outil.
   let brainInfo = {triggered:false};
   if(brainActive){
-    brainInfo = computeBrainDecision(displaySuit);
+    brainInfo = computeBrainDecision(displaySuit, side);
     if(brainInfo.triggered){
       brainInfo.baseSuit = displaySuit;
       displaySuit = brainInfo.overrideSuit;
     }
   }
-
-  const side = computeSide(r.avantDernier, r.dernierDigit);
 
   document.getElementById('res-num').textContent=`#N${r.nextNum}`;
   const red=isRed(displaySuit);
@@ -1251,7 +1371,12 @@ function renderResult(r){
     autoMilieuBadge = `<div class="badge badge-automilieu">🔁 AUTO ALL INVERSE — ${am.autoReason} → BOUTON : ${am.shouldBeOn?'ON ✓':'OFF ✗'}</div>`;
   }
 
+  const statusBadge = (r.usability && r.usability.status==='EN_COURS_P2')
+    ? [`<div class="badge badge-automilieu">⏳ JEU #N${r.num} EN COURS — ${r.usability.message}</div>`]
+    : [];
+
   const badges=[
+    ...statusBadge,
     `<div class="badge badge-range2">${rangeInvInfo.applied?'🔀':'⬛'} ALGO 2 (900-1441) — #N${r.nextNum} ${rangeInvInfo.applied?`DANS LA PLAGE → INVERSION ${SUIT_EMOJI[rangeInvInfo.before]} → ${SUIT_EMOJI[rangeInvInfo.after]}`:'HORS PLAGE — INACTIF'}</div>`,
     `<div class="badge badge-side">${side==='P1'?'👤':'🏦'} ATTRIBUTION — Av-dern=${r.avantDernier}(${r.avantDernier%2!==0?'IMPAIR':'PAIR'}) · Dernier=${r.dernierDigit}(${(r.dernierDigit>=1&&r.dernierDigit<=5)?'1-5':'6-0'}) → ${side==='P1'?'P1 (JOUEUR)':'P2 (BANQUIER)'}</div>`,
     `<div class="badge badge-selector">🎯 SÉLECTEUR — ${selectorLine}</div>`,
@@ -1279,8 +1404,8 @@ function renderResult(r){
     // Badge CERVEAU INTELLIGENT
     brainActive
       ? (brainInfo.triggered
-          ? `<div class="badge badge-brain">🧠 CERVEAU INTELLIGENT — ${brainInfo.reason} → BASCULE ${SUIT_EMOJI[brainInfo.baseSuit]} → ${SUIT_EMOJI[brainInfo.overrideSuit]} (taux récent ${Math.round(brainInfo.overrideRate*100)}% sur ${brainInfo.overrideSample})</div>`
-          : `<div class="badge badge-brain" style="opacity:.45">🧠 CERVEAU INTELLIGENT — aucune dérive détectée, prédiction conservée</div>`)
+          ? `<div class="badge badge-brain">🧠 CERVEAU INTELLIGENT (RÉEL) — ${brainInfo.reason} → BASCULE ${SUIT_EMOJI[brainInfo.baseSuit]} → ${SUIT_EMOJI[brainInfo.overrideSuit]} (taux réel ${Math.round(brainInfo.overrideRate*100)}% sur ${brainInfo.overrideSample} jeux)</div>`
+          : `<div class="badge badge-brain" style="opacity:.45">🧠 CERVEAU INTELLIGENT (RÉEL) — ${brainInfo.sampleSize ? `${brainInfo.sampleSize} jeux réels analysés, ` : ''}aucune dérive détectée, prédiction conservée</div>`)
       : `<div class="badge badge-brain" style="opacity:.3">🧠 CERVEAU INTELLIGENT OFF — INACTIF</div>`
   ];
   document.getElementById('badge-zone').innerHTML=badges.join('');
@@ -1370,6 +1495,19 @@ ${r.milieuRule.active?`<div class="det-row"><span class="det-label" style="color
 <div class="det-row"><span class="det-label" style="color:#ff88ff">Avant-dernier chiffre</span><span class="det-val" style="color:#ff88ff">${r.avantDernier} (${allInvInfo.isPair?'PAIR':'IMPAIR'})</span></div>
 <div class="det-row"><span class="det-label" style="color:#ff88ff">Règle ALL INVERSE</span><span class="det-val" style="color:#ff88ff">${allInvInfo.label}</span></div>
 <div class="det-row"><span class="det-label" style="color:#ff88ff">Transformation</span><span class="det-val" style="color:#ff88ff">${SUIT_EMOJI[allInvInfo.before]} → ${SUIT_EMOJI[allInvInfo.result]}</span></div>`;
+  }
+
+  // CERVEAU INTELLIGENT dans les détails (basé sur les jeux RÉELS)
+  if(brainActive){
+    detailsHTML+=`
+<hr class="det-sep">
+<div class="det-row"><span class="det-label" style="color:#ffd166">🧠 CERVEAU INTELLIGENT (RÉEL)</span><span class="det-val" style="color:#ffd166">${brainInfo.triggered?'DÉRIVE DÉTECTÉE — BASCULE':'AUCUNE DÉRIVE'}</span></div>
+<div class="det-row"><span class="det-label" style="color:#ffd166">Source des données</span><span class="det-val" style="color:#ffd166">Résultats réels (canal Telegram / saisie), côté ${side==='P2'?'Banquier/P2':'Joueur/P1'}</span></div>
+<div class="det-row"><span class="det-label" style="color:#ffd166">Échantillon analysé</span><span class="det-val" style="color:#ffd166">${brainInfo.sampleSize||0} jeu(x) réel(s) sur 10 max</span></div>
+${brainInfo.candRate!==null&&brainInfo.candRate!==undefined?`<div class="det-row"><span class="det-label" style="color:#ffd166">Taux réel couleur candidate</span><span class="det-val" style="color:#ffd166">${Math.round(brainInfo.candRate*100)}%</span></div>`:''}
+<div class="det-row"><span class="det-label" style="color:#ffd166">Absences consécutives réelles</span><span class="det-val" style="color:#ffd166">${brainInfo.consecutiveMisses||0}</span></div>
+${brainInfo.triggered?`<div class="det-row"><span class="det-label" style="color:#ffd166">Raison</span><span class="det-val" style="color:#ffd166">${brainInfo.reason}</span></div>
+<div class="det-row"><span class="det-label" style="color:#ffd166">Bascule</span><span class="det-val" style="color:#ffd166">${SUIT_EMOJI[brainInfo.baseSuit]} → ${SUIT_EMOJI[brainInfo.overrideSuit]}</span></div>`:''}`;
   }
 
   detailsHTML+=`
