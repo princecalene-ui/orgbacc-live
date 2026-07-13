@@ -33,26 +33,44 @@
   .subtitle{font-size:.78rem;letter-spacing:.25em;color:var(--ivory-dim);margin-top:6px;text-transform:uppercase}
   .author{font-size:.7rem;color:var(--gold-dim);margin-top:4px;letter-spacing:.2em}
   main{max-width:680px;margin:0 auto;padding:28px 16px 60px}
+
   /* ─── BOUTON ALL INVERSE ─── */
-  .allinv-wrap{display:flex;justify-content:center;margin-bottom:22px;}
+  .allinv-wrap{
+    display:flex;justify-content:center;margin-bottom:22px;
+  }
   .btn-allinv{
-    position:relative;display:flex;align-items:center;gap:12px;
-    background:linear-gradient(135deg,#120a1a,#1e0f2e);border:1.5px solid #5a3a9a;border-radius:4px;
-    padding:12px 22px;cursor:pointer;font-family:'Cinzel',serif;font-size:.78rem;font-weight:700;
-    letter-spacing:.22em;text-transform:uppercase;color:#9c7cff;transition:all .22s;user-select:none;
+    position:relative;
+    display:flex;align-items:center;gap:12px;
+    background:linear-gradient(135deg,#120a1a,#1e0f2e);
+    border:1.5px solid #5a3a9a;border-radius:4px;
+    padding:12px 22px;cursor:pointer;
+    font-family:'Cinzel',serif;font-size:.78rem;font-weight:700;letter-spacing:.22em;
+    text-transform:uppercase;color:#9c7cff;
+    transition:all .22s;user-select:none;
   }
   .btn-allinv:hover{border-color:#9c7cff;box-shadow:0 0 18px #8b6cf055;}
   .btn-allinv.active{
-    background:linear-gradient(135deg,#1a0a2e,#2d1555);border-color:#cc44ff;color:#ff88ff;
-    box-shadow:0 0 24px #cc44ff66,inset 0 0 12px #8b2aaa22;animation:inv-pulse 2s ease-in-out infinite;
+    background:linear-gradient(135deg,#1a0a2e,#2d1555);
+    border-color:#cc44ff;color:#ff88ff;
+    box-shadow:0 0 24px #cc44ff66,inset 0 0 12px #8b2aaa22;
+    animation:inv-pulse 2s ease-in-out infinite;
   }
   @keyframes inv-pulse{0%,100%{box-shadow:0 0 20px #cc44ff55,inset 0 0 10px #8b2aaa22}50%{box-shadow:0 0 36px #cc44ffaa,inset 0 0 20px #8b2aaa44}}
-  .toggle-track{width:40px;height:20px;border-radius:10px;background:#2a1a3a;border:1px solid #5a3a9a;
-    position:relative;transition:background .22s,border-color .22s;flex-shrink:0;}
+
+  /* Toggle switch intégré */
+  .toggle-track{
+    width:40px;height:20px;border-radius:10px;
+    background:#2a1a3a;border:1px solid #5a3a9a;
+    position:relative;transition:background .22s,border-color .22s;flex-shrink:0;
+  }
   .btn-allinv.active .toggle-track{background:#6a1aaa;border-color:#cc44ff;}
-  .toggle-thumb{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:7px;background:#5a3a9a;
-    transition:left .22s,background .22s;}
+  .toggle-thumb{
+    position:absolute;top:2px;left:2px;
+    width:14px;height:14px;border-radius:7px;
+    background:#5a3a9a;transition:left .22s,background .22s;
+  }
   .btn-allinv.active .toggle-thumb{left:22px;background:#ff88ff;}
+
   .allinv-label-wrap{display:flex;flex-direction:column;gap:2px;text-align:left;}
   .allinv-title{font-size:.78rem;letter-spacing:.22em;}
   .allinv-rule{font-size:.62rem;letter-spacing:.1em;opacity:.7;font-family:'Rajdhani',sans-serif;font-weight:400;text-transform:none;}
@@ -62,6 +80,8 @@
     transition:all .22s;
   }
   .btn-allinv.active .allinv-status{background:#2d0a50;border-color:#cc44ff;color:#ff88ff;}
+
+  /* ─── AUTO-MODE indicator ─── */
   .auto-mode-badge{
     display:none;text-align:center;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.18em;
     text-transform:uppercase;margin-top:6px;padding:4px 12px;border-radius:2px;
@@ -71,6 +91,7 @@
   .auto-mode-badge.auto-on{border-color:#cc44ff;color:#ff88ff;background:#1a0a2e;}
   .auto-mode-badge.auto-off{border-color:#5a3a9a;color:#9c7cff;background:#0d0a18;}
   .allinv-center{display:flex;flex-direction:column;align-items:center;gap:4px;}
+
   /* ─── INPUT ─── */
   .input-card{
     background:var(--card-bg);border:1px solid var(--border);border-top:2px solid var(--bordeaux);
@@ -102,6 +123,7 @@
     background:#1a0808;border:1px solid #5a1010;border-left:3px solid #cc2222;border-radius:3px;
     padding:12px 16px;font-size:.85rem;color:#e06060;margin-top:16px;display:none;
   }
+
   #result-zone{display:none}
   .result-card{
     background:var(--card-bg);border:1px solid var(--border);border-top:2px solid var(--gold);
@@ -121,11 +143,14 @@
   }
   @keyframes pulse-glow{0%,100%{filter:drop-shadow(0 0 20px #c9a84c55)}50%{filter:drop-shadow(0 0 40px #c9a84caa)}}
   .prediction-suit-label{
-    text-align:center;font-family:'Cinzel',serif;font-size:clamp(1.8rem,8vw,3rem);font-weight:900;
-    color:var(--gold);letter-spacing:.15em;margin-bottom:12px;
+    text-align:center;font-family:'Cinzel',serif;font-size:clamp(1.2rem,5vw,1.6rem);font-weight:900;
+    color:var(--gold);letter-spacing:.1em;margin-bottom:12px;
   }
+
+  /* Badge ALL INVERSE actif sous la prédiction */
   .allinv-active-banner{
-    display:none;text-align:center;margin:0 auto 20px;padding:8px 18px;
+    display:none;
+    text-align:center;margin:0 auto 20px;padding:8px 18px;
     background:linear-gradient(135deg,#1a0a2e,#2d1555);
     border:1px solid #cc44ff;border-radius:3px;
     font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;
@@ -133,6 +158,7 @@
     max-width:420px;
   }
   .allinv-active-banner.show{display:block;}
+
   .copy-row{display:flex;justify-content:center;margin-bottom:24px}
   .btn-copy{
     background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Rajdhani',sans-serif;
@@ -141,6 +167,7 @@
   }
   .btn-copy:hover{background:var(--gold-dim);color:var(--black)}
   .btn-copy.copied{background:var(--green-ok);border-color:var(--green-ok);color:#fff}
+
   .analyse-sep{
     border-top:1px solid var(--bordeaux);margin:20px 0 18px;position:relative;
   }
@@ -151,6 +178,7 @@
   }
   .badge-row{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
   .badge{border-radius:3px;padding:9px 14px;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;text-align:center}
+
   .badge-selector{background:linear-gradient(135deg,#0a1a0a,#122012);border:1px solid #2a6a2a;border-left:3px solid #4caf50;color:#80e080;animation:flicker-green 3s ease-in-out infinite;}
   @keyframes flicker-green{0%,100%{box-shadow:0 0 8px #4caf5044}50%{box-shadow:0 0 18px #4caf5088}}
   .badge-algo{background:linear-gradient(135deg,#120f00,#261f05);border:1px solid #8a6c18;border-left:3px solid #e0bf59;color:#f1d57a;animation:flicker-gold 3s ease-in-out infinite;}
@@ -170,7 +198,8 @@
   .badge-hyper{background:linear-gradient(135deg,#1a001a,#2d002d);border:1px solid #aa00aa;border-left:3px solid #ff44ff;color:#ffaaff;animation:flicker-hyper 3s ease-in-out infinite;font-weight:700;}
   @keyframes flicker-hyper{0%,100%{box-shadow:0 0 10px #ff44ff55}50%{box-shadow:0 0 24px #ff44ffaa}}
   .badge-finalinv{background:linear-gradient(135deg,#1a0a1a,#2a0f2a);border:1px solid #8b2a8b;border-left:3px solid #dd44dd;color:#ff99ff;animation:flicker-pink 3s ease-in-out infinite;}
-  @keyframes flicker-pink{0%,100%{box-shadow:0 0 8px #dd44dd44}50%{box-shadow:0 0 18px #dd44dd88}}
+
+  /* Badge ALL INVERSE dans la liste */
   .badge-allinv{
     background:linear-gradient(135deg,#1a0a2e,#2d1555);
     border:1px solid #cc44ff;border-left:3px solid #ff88ff;
@@ -178,6 +207,8 @@
     animation:flicker-allinv 2s ease-in-out infinite;
   }
   @keyframes flicker-allinv{0%,100%{box-shadow:0 0 12px #cc44ff66}50%{box-shadow:0 0 28px #cc44ffcc}}
+
+  /* Badge AUTO-MILIEU (détail règle auto) */
   .badge-automilieu{
     background:linear-gradient(135deg,#0a0f1a,#101828);
     border:1px solid #3a5a9a;border-left:3px solid #7aadff;
@@ -185,6 +216,8 @@
     animation:flicker-automilieu 3s ease-in-out infinite;
   }
   @keyframes flicker-automilieu{0%,100%{box-shadow:0 0 8px #7aadff33}50%{box-shadow:0 0 18px #7aadff77}}
+
+  .copy-row{display:flex;justify-content:center;margin-bottom:24px}
   .details-toggle{
     display:flex;align-items:center;gap:8px;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
     color:var(--ivory-dim);cursor:pointer;user-select:none;margin-bottom:10px;border:none;background:none;
@@ -204,11 +237,13 @@
   .det-result{color:var(--gold);font-weight:700}
   .hi{color:var(--gold)} .hi-blue{color:var(--blue)} .hi-violet{color:#b49bff}
   .hi-red{color:var(--red)} .hi-teal{color:#4ecdc4} .hi-green{color:#80e080} .hi-pink{color:#ff99ff}
+
   footer{
     text-align:center;padding:20px;font-size:.65rem;letter-spacing:.2em;color:#3a2a2a;
     text-transform:uppercase;border-top:1px solid #1a0f0f;
   }
   @media (max-width:560px){.det-row{flex-direction:column}.det-val{text-align:left}}
+
   .live-card{
     background:linear-gradient(135deg,#10161f,#141b24);border:1px solid #243346;border-top:2px solid var(--blue);
     border-radius:4px;padding:22px 20px 18px;margin-bottom:24px;position:relative;
@@ -232,6 +267,7 @@
   .btn-live.loading{opacity:.75;pointer-events:none}
   .live-source{margin-top:12px;padding:10px 12px;background:#0a0f14;border:1px solid #1a2735;border-radius:3px;font-family:'Courier Prime',monospace;font-size:.8rem;line-height:1.5;color:#d7ecff;word-break:break-word}
   .live-source small{display:block;color:#7ea6cc;margin-bottom:6px;font-family:'Rajdhani',sans-serif;letter-spacing:.12em;text-transform:uppercase}
+
 </style>
 </head>
 <body>
@@ -247,6 +283,7 @@
 </header>
 
 <main>
+  
   <div class="live-card">
     <div class="live-top">
       <div class="live-meta">
@@ -262,6 +299,7 @@
     </div>
     <div class="live-source" id="live-source"><small>Dernière donnée chargée</small>Aucune donnée récupérée pour le moment.</div>
   </div>
+
 
   <div class="input-card">
     <label for="game-input">Entrez le jeu précédent</label>
@@ -309,20 +347,137 @@
 <footer>ORG BACC COMBO · X_Code · ♠️ ♥️ ♣️ ♦️</footer>
 
 <script>
-// ──────────────────────────────────────────────────────────────────
-// GLOBAL STATE
-// ──────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════
+//  ÉTAT GLOBAL
+// ══════════════════════════════════════════════════════
 let allInverseActive = false;
-let allInverseManual = false;   // true = manuel, false = auto‑piloted
+let allInverseManual = false;
 let lastCalcResult   = null;
 
-// ──────────────────────────────────────────────────────────────────
-// CONSTANTES & UTILITAIRES
-// ──────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════
+//  CONSTANTES
+// ══════════════════════════════════════════════════════
 const SUIT_EMOJI = {'♠️':'♠️','♥️':'♥️','♦️':'♦️','♣️':'♣️'};
 const SUIT_NAMES = {'♠️':'PIQUE','♥️':'COEUR','♦️':'CARREAU','♣️':'TRÈFLE'};
 function isRed(s){ return s==='♥️'||s==='♦️'; }
 
+// ══════════════════════════════════════════════════════
+//  NOUVELLE FONCTION : Attribution P1 / P2
+// ══════════════════════════════════════════════════════
+function getPAssignment(nextNum){
+  const numStr = String(nextNum).padStart(2, '0');
+  const len = numStr.length;
+  const avantDernier = parseInt(numStr[len-2], 10);
+  const dernier = parseInt(numStr[len-1], 10);
+
+  let p = 'P1';
+
+  if (avantDernier % 2 === 1) { // impair
+    p = (dernier >= 1 && dernier <= 5) ? 'P1' : 'P2';
+  } else { // pair
+    p = (dernier >= 1 && dernier <= 5) ? 'P2' : 'P1';
+  }
+
+  // Inversion supplémentaire pour numéros 1000-1441 (4 chiffres)
+  if (nextNum >= 1000 && nextNum <= 1441 && len >= 4) {
+    const d2 = parseInt(numStr[1], 10);
+    const d3 = parseInt(numStr[2], 10);
+    if ((d2 % 2 === 1) && (d3 % 2 === 1)) {
+      p = (p === 'P1') ? 'P2' : 'P1';
+    }
+  }
+
+  return p;
+}
+
+// ══════════════════════════════════════════════════════
+//  AUTO MILIEU (conservé)
+// ══════════════════════════════════════════════════════
+function autoMilieuInverse(milieuDigit, nextM, firstDigit){
+  const milieuPair    = [0,2,4,6,8].includes(milieuDigit);
+  const firstDigitPair = (firstDigit % 2 === 0);
+  const minUnit  = nextM % 10;
+  const min1to5  = (minUnit >= 1 && minUnit <= 5);
+  let shouldBeOn;
+  let autoReason;
+  const branchLabel = firstDigitPair ? `1er chiffre=${firstDigit}(PAIR)` : `1er chiffre=${firstDigit}(IMPAIR)`;
+  const milieuLabel = milieuPair ? `MILIEU=${milieuDigit}(PAIR)` : `MILIEU=${milieuDigit}(IMPAIR)`;
+  const minLabel    = min1to5 ? `MIN_UNITÉ=${minUnit}(1-5)` : `MIN_UNITÉ=${minUnit}(6-0)`;
+
+  if(firstDigitPair){
+    if(milieuPair){
+      shouldBeOn = !min1to5;
+    } else {
+      shouldBeOn = min1to5;
+    }
+  } else {
+    if(milieuPair){
+      shouldBeOn = min1to5;
+    } else {
+      shouldBeOn = !min1to5;
+    }
+  }
+
+  autoReason = `${branchLabel} · ${milieuLabel} · ${minLabel} → AUTO ${shouldBeOn ? 'ON' : 'OFF'}`;
+  return { shouldBeOn, autoReason, milieuPair, firstDigitPair, min1to5, minUnit, firstDigit };
+}
+
+// ══════════════════════════════════════════════════════
+//  ALL INVERSE — logique post-prédiction (conservé)
+// ══════════════════════════════════════════════════════
+function applyAllInverse(suit, avantDernier, nextH){
+  const isPair    = (avantDernier % 2 === 0);
+  const heurePair = (nextH % 2 === 0);
+  let map, label;
+
+  if(!heurePair){
+    if(isPair){
+      map   = {'♠️':'♦️','♦️':'♠️','♣️':'♥️','♥️':'♣️'};
+      label = `H=${nextH}(IMPAIR) · AV-DERN ${avantDernier}(PAIR) → ♠️↔️♦️ / ♣️↔️♥️`;
+    } else {
+      map   = {'♠️':'♣️','♣️':'♠️','♥️':'♥️','♦️':'♦️'};
+      label = `H=${nextH}(IMPAIR) · AV-DERN ${avantDernier}(IMPAIR) → ♠️↔️♣️`;
+    }
+  } else {
+    if(isPair){
+      map   = {'♠️':'♥️','♥️':'♠️','♣️':'♦️','♦️':'♣️'};
+      label = `H=${nextH}(PAIR) · AV-DERN ${avantDernier}(PAIR) → ♠️↔️♥️ / ♣️↔️♦️`;
+    } else {
+      map   = {'♠️':'♦️','♦️':'♠️','♣️':'♥️','♥️':'♣️'};
+      label = `H=${nextH}(PAIR) · AV-DERN ${avantDernier}(IMPAIR) → ♠️↔️♦️ / ♣️↔️♥️`;
+    }
+  }
+
+  const result = map[suit] || suit;
+  return { result, label, isPair, heurePair, before: suit };
+}
+
+// ══════════════════════════════════════════════════════
+//  TOGGLE ALL INVERSE BUTTON
+// ══════════════════════════════════════════════════════
+function toggleAllInverse(){
+  allInverseManual = true;
+  allInverseActive = !allInverseActive;
+  updateAllInverseUI();
+  if(lastCalcResult) renderResult(lastCalcResult);
+}
+
+function setAllInverseAuto(state){
+  allInverseManual = false;
+  allInverseActive = state;
+  updateAllInverseUI();
+}
+
+function updateAllInverseUI(){
+  const btn    = document.getElementById('btn-allinv');
+  const status = document.getElementById('allinv-status');
+  btn.classList.toggle('active', allInverseActive);
+  status.textContent = allInverseActive ? 'ON' : 'OFF';
+}
+
+// ══════════════════════════════════════════════════════
+//  UTILITAIRES
+// ══════════════════════════════════════════════════════
 function normSuit(raw){
   const c=raw.replace(/\uFE0F/g,'');
   if(c==='♠') return '♠️';
@@ -337,39 +492,30 @@ function cardValue(v){
   const n=parseInt(v,10);
   return isNaN(n)?null:n;
 }
+
 function parseGame(raw){
-  const s=raw.trim();
-
-  // 1️⃣  Détection des symboles  ⏰ et ▶
-  const hasClock = s.includes('⏰');
-  const hasArrow = s.includes('▶');
-
-  // 2️⃣  Extraction du numéro de jeu
+  let s = raw.trim().replace(/[⏰▶]/g, '').trim(); // Nettoyage des symboles ⏰ et ▶
   const numMatch=s.match(/#N(\d+)/i);
-  if(!numMatch) throw new Error("Numéro de jeu introuvable. Format: #Nxxxx");
+  if(!numMatch) throw new Error("Numéro de jeu introuvable. Format: #N1283");
   const num=parseInt(numMatch[1],10);
-
-  // 3️⃣  Extraction des cartes (parenthèses)
   const groups=[...s.matchAll(/\(([^)]+)\)/g)].map(m=>m[1]);
-
-  // Si les deux parenthèses existent, on les utilise
   let p1=[],p2=[];
   if(groups.length>=2){
     p1=[...groups[0].matchAll(/([AKQJ]|10|[2-9])([\u2660\u2665\u2666\u2663][\uFE0F]?|[♠♥♦♣][\uFE0F]?)/g)]
         .map(m=>({val:m[1],suit:normSuit(m[2])}));
     p2=[...groups[1].matchAll(/([AKQJ]|10|[2-9])([\u2660\u2665\u2666\u2663][\uFE0F]?|[♠♥♦♣][\uFE0F]?)/g)]
         .map(m=>({val:m[1],suit:normSuit(m[2])}));
-  }else{
-    // Fallback : toutes les cartes en une fois; les deux premières vont à P1, les deux suivantes à P2
+  }
+  if(!p1.length||!p2.length){
     const all=[...s.matchAll(/([AKQJ]|10|[2-9])([\u2660\u2665\u2666\u2663][\uFE0F]?|[♠♥♦♣][\uFE0F]?)/g)]
                .map(m=>({val:m[1],suit:normSuit(m[2])}));
-    const half=Math.ceil(all.length/2);
-    p1=all.slice(0,half);
-    p2=all.slice(half);
+    if(all.length<2) throw new Error("Cartes introuvables. Vérifiez le format.");
+    const h=Math.ceil(all.length/2);
+    p1=all.slice(0,h); p2=all.slice(h);
   }
-
-  return {num,p1,p2,hasClock,hasArrow};
+  return {num,p1,p2};
 }
+
 function numToTime(n){
   const total=n-1;
   const h=Math.floor(total/60)%24;
@@ -393,288 +539,456 @@ function signHM(h,m){
   return prod>=0?'+':'-';
 }
 
-// ──────────────────────────────────────────────────────────────────
-// AUTO‑MILIEU (pilote le bouton ALL INVERSE)
-// ──────────────────────────────────────────────────────────────────
-function autoMilieuInverse(milieuDigit, nextM, firstDigit){
-  const milieuPair    = [0,2,4,6,8].includes(milieuDigit);
-  const firstDigitPair = (firstDigit % 2 === 0);
-  const minUnit  = nextM % 10;
-  const min1to5  = (minUnit >= 1 && minUnit <= 5);
-  let shouldBeOn;
-  if(firstDigitPair){
-    if(milieuPair) shouldBeOn = !min1to5;
-    else           shouldBeOn =  min1to5;
-  }else{
-    if(milieuPair) shouldBeOn =  min1to5;
-    else           shouldBeOn = !min1to5;
-  }
-  const reason=`${firstDigitPair?'1er_chiffre PAIR':'1er_chiffre IMPAIR'} · ${milieuPair?'MILIEU PAIR':'MILIEU IMPAIR'} · ${min1to5?'MIN 1‑5':'MIN 6‑0'} → AUTO ${shouldBeOn?'ON':'OFF'}`;
-  return {shouldBeOn,reason};
-}
-
-// ──────────────────────────────────────────────────────────────────
-// ALL INVERSE (post‑prédiction)
-// ──────────────────────────────────────────────────────────────────
-function applyAllInverse(suit, avantDernier, nextH){
-  const isPair    = (avantDernier % 2 === 0);
-  const heurePair = (nextH % 2 === 0);
-  let map, label;
-  if(!heurePair){
-    if(isPair){ map={'♠️':'♦️','♦️':'♠️','♣️':'♥️','♥️':'♣️'}; label=`H=${nextH}(IMPAIR)·AV‑DERN ${avantDernier}(PAIR) → ♠↔♦/♣↔♥`; }
-    else     { map={'♠️':'♣️','♣️':'♠️','♥️':'♥️','♦️':'♦️'}; label=`H=${nextH}(IMPAIR)·AV‑DERN ${avantDernier}(IMPAIR) → ♠↔♣`; }
-  }else{
-    if(isPair){ map={'♠️':'♥️','♥️':'♠️','♣️':'♦️','♦️':'♣️'}; label=`H=${nextH}(PAIR)·AV‑DERN ${avantDernier}(PAIR) → ♠↔♥/♣↔♦`; }
-    else     { map={'♠️':'♦️','♦️':'♠️','♣️':'♥️','♥️':'♣️'}; label=`H=${nextH}(PAIR)·AV‑DERN ${avantDernier}(IMPAIR) → ♠↔♦/♣↔♥`; }
-  }
-  const result = map[suit]||suit;
-  return {result,label,isPair,heurePair,before:suit};
-}
-
-// ──────────────────────────────────────────────────────────────────
-// TOGGLE ALL INVERSE (manuel)
-// ──────────────────────────────────────────────────────────────────
-function toggleAllInverse(){
-  allInverseManual = true;
-  allInverseActive = !allInverseActive;
-  updateAllInverseUI();
-  if(lastCalcResult) renderResult(lastCalcResult);
-}
-function setAllInverseAuto(state){
-  allInverseManual = false;
-  allInverseActive = state;
-  updateAllInverseUI();
-}
-function updateAllInverseUI(){
-  const btn=document.getElementById('btn-allinv');
-  const status=document.getElementById('allinv-status');
-  btn.classList.toggle('active',allInverseActive);
-  status.textContent=allInverseActive?'ON':'OFF';
-}
-
-// ──────────────────────────────────────────────────────────────────
-// SÉLECTEUR V4 / V5+
-// ──────────────────────────────────────────────────────────────────
-function selectSystem(nextH,nextM,nextNum){
-  const hPair = (nextH%2===0);
+// ══════════════════════════════════════════════════════
+//  SÉLECTEUR V4 / V5+ (conservé)
+// ══════════════════════════════════════════════════════
+function selectSystem(nextH, nextM, nextNum){
+  const hPair = (nextH % 2 === 0);
+  const hImp  = !hPair;
   const groupA = [0,1,2,3,4,5,6,7,8,9,20,21,22,23,24].includes(nextH);
   const groupB = [10,11,12,13,14,15,16,17,18,19].includes(nextH);
-  const numStr=String(nextNum);
-  const avantDernierDigit = numStr.length>=2 ? parseInt(numStr[numStr.length-2],10) : parseInt(numStr[0],10);
-  const avantDernierPair = (avantDernierDigit%2===0);
-  const min0_11  = (nextM>=0 && nextM<=11);
-  const min12_59 = (nextM>=12 && nextM<=59);
-  // La logique originale est conservée – le résultat de sélection est inchangé
+  const numStr = String(nextNum);
+  const avantDernierDigit = numStr.length >= 2 ? parseInt(numStr[numStr.length-2],10) : parseInt(numStr[0],10);
+  const avantDernierPair  = (avantDernierDigit % 2 === 0);
+  const avantDernierImp   = !avantDernierPair;
+  const min0_11  = (nextM >= 0  && nextM <= 11);
+  const min12_59 = (nextM >= 12 && nextM <= 59);
   if(groupA){
-    if(!hPair){
+    if(hImp){
       if(avantDernierPair){
-        return min12_59?{algo:'V5+',invKey:'CD_SH',invLabel:'V5++ ♣↔♦ / ♠↔♥'}:{algo:'V4',invKey:'CH_SD',invLabel:'V4+ ♣↔♥ / ♠↔♦'};
-      }else{
-        return min12_59?{algo:'V4',invKey:'CD_SH',invLabel:'V4+ ♣↔♦ / ♠↔♥'}:{algo:'V5+',invKey:'CH_SD',invLabel:'V5++ ♣↔♥ / ♠↔♦'};
+        if(min12_59) return {algo:'V5+', invKey:'CD_SH', invLabel:'V5++ ♣↔♦ / ♠↔♥'};
+        if(min0_11)  return {algo:'V4',  invKey:'CH_SD', invLabel:'V4+ ♣↔♥ / ♠↔♦'};
       }
-    }else{
+      if(avantDernierImp){
+        if(min12_59) return {algo:'V4',  invKey:'CD_SH', invLabel:'V4+ ♣↔♦ / ♠↔♥'};
+        if(min0_11)  return {algo:'V5+', invKey:'CH_SD', invLabel:'V5++ ♣↔♥ / ♠↔♦'};
+      }
+    }
+    if(hPair){
       if(avantDernierPair){
-        return {algo:'V5+',invKey:'CD_SH',invLabel:'V5++ ♣↔♦ / ♠↔♥'};
-      }else{
-        return min12_59?{algo:'V5+',invKey:'CH_SD',invLabel:'V5++ ♣↔♥ / ♠↔♦'}:{algo:'V4',invKey:'CH_SD',invLabel:'V4+ ♣↔♥ / ♠↔♦'};
+        if(min12_59) return {algo:'V5+', invKey:'CD_SH', invLabel:'V5++ ♣↔♦ / ♠↔♥'};
+        if(min0_11)  return {algo:'V5+', invKey:'CD_SH', invLabel:'V5++ ♣↔♦ / ♠↔♥'};
+      }
+      if(avantDernierImp){
+        if(min12_59) return {algo:'V5+', invKey:'CH_SD', invLabel:'V5++ ♣↔♥ / ♠↔♦'};
+        if(min0_11)  return {algo:'V4',  invKey:'CH_SD', invLabel:'V4+ ♣↔♥ / ♠↔♦'};
       }
     }
   }
   if(groupB){
     if(hPair){
       if(avantDernierPair){
-        return min12_59?{algo:'V5+',invKey:'CH_SD',invLabel:'V5++ ♣↔♥ / ♠↔♦'}:{algo:'V4',invKey:'CD_SH',invLabel:'V4+ ♣↔♦ / ♠↔♥'};
-      }else{
-        return min12_59?{algo:'V5+',invKey:'CD_SH',invLabel:'V5++ ♣↔♦ / ♠↔♥'}:{algo:'V4',invKey:'CH_SD',invLabel:'V4+ ♣↔♥ / ♠↔♦'};
+        if(min12_59) return {algo:'V5+', invKey:'CH_SD', invLabel:'V5++ ♣↔♥ / ♠↔♦'};
+        if(min0_11)  return {algo:'V4',  invKey:'CD_SH', invLabel:'V4+ ♣↔♦ / ♠↔♥'};
       }
-    }else{
+      if(avantDernierImp){
+        if(min12_59) return {algo:'V5+', invKey:'CD_SH', invLabel:'V5++ ♣↔♦ / ♠↔♥'};
+        if(min0_11)  return {algo:'V4',  invKey:'CH_SD', invLabel:'V4+ ♣↔♥ / ♠↔♦'};
+      }
+    }
+    if(hImp){
       if(avantDernierPair){
-        return min12_59?{algo:'V5+',invKey:'CH_SD',invLabel:'V5++ ♣↔♥ / ♠↔♦'}:{algo:'V4',invKey:'SPECIAL_LAST',invLabel:'V4+ (dernier chiffre)'};
-      }else{
-        return min12_59?{algo:'V4',invKey:'SPECIAL_LAST_NOTRANCH',invLabel:'V4+ (dernier chiffre / aucune inv si 6-9 ou 0)'}:{algo:'V4',invKey:'SH_CD',invLabel:'V4+ ♠↔♥ / ♣↔♦'};
+        if(min12_59) return {algo:'V5+', invKey:'CH_SD', invLabel:'V5++ ♣↔♥ / ♠↔♦'};
+        if(min0_11)  return {algo:'V4', invKey:'SPECIAL_LAST', invLabel:'V4+ (dernier chiffre)'};
+      }
+      if(avantDernierImp){
+        if(min12_59) return {algo:'V4', invKey:'SPECIAL_LAST_NOTRANCH', invLabel:'V4+ (dernier chiffre / aucune inv si 6-9 ou 0)'};
+        if(min0_11)  return {algo:'V4',  invKey:'SH_CD', invLabel:'V4+ ♠↔♥ / ♣↔♦'};
       }
     }
   }
-  return {algo:'V4',invKey:'CD_SH',invLabel:'V4+ ♣↔♦ / ♠↔♥'};
+  return {algo:'V4', invKey:'CD_SH', invLabel:'V4+ ♣↔♦ / ♠↔♥'};
 }
 
-// ──────────────────────────────────────────────────────────────────
-// FINAL INVERSION (numéro 900‑1441) + DOUBLE‑INVERSION >=1000
-// ──────────────────────────────────────────────────────────────────
-function finalInversionRange(suit,num){
-  // 900‑1441 → simple inversion ♣↔♥, ♠↔♦
-  if(num>=900 && num<=1441){
-    const map={'♣️':'♥️','♥️':'♣️','♠️':'♦️','♦️':'♠️'};
-    suit=map[suit]||suit;
+function applyFinalInv(suit, invKey, lastDigit){
+  const CD_SH = {'♣️':'♦️','♦️':'♣️','♠️':'♥️','♥️':'♠️'};
+  const CH_SD = {'♣️':'♥️','♥️':'♣️','♠️':'♦️','♦️':'♠️'};
+  const SH_CD = CD_SH;
+  if(invKey==='CD_SH') return {result:CD_SH[suit]||suit, detail:`${SUIT_EMOJI[suit]}→${SUIT_EMOJI[CD_SH[suit]||suit]}`};
+  if(invKey==='CH_SD') return {result:CH_SD[suit]||suit, detail:`${SUIT_EMOJI[suit]}→${SUIT_EMOJI[CH_SD[suit]||suit]}`};
+  if(invKey==='SH_CD') return {result:SH_CD[suit]||suit, detail:`${SUIT_EMOJI[suit]}→${SUIT_EMOJI[SH_CD[suit]||suit]}`};
+  if(invKey==='SPECIAL_LAST'){
+    const ld = lastDigit;
+    if(ld>=1 && ld<=5) return {result:CH_SD[suit]||suit, detail:`dernier chiffre ${ld} (1-5) → ♣↔♥/♠↔♦ → ${SUIT_EMOJI[suit]}→${SUIT_EMOJI[CH_SD[suit]||suit]}`};
+    else return {result:suit, detail:`dernier chiffre ${ld} (0 ou 6-9) → 0 inversion`};
   }
-  // >=1000 && 2ᵉ chiffre IMPAIR && 3ᵉ chiffre IMPAIR → inversion P1↔P2 + même mapping ci‑dessus
-  if(num>=1000){
-    const str=String(num);
-    if(str.length>=3){
-      const second=parseInt(str[1],10);
-      const third=parseInt(str[2],10);
-      if(second%2===1 && third%2===1){
-        const map={'♣️':'♥️','♥️':'♣️','♠️':'♦️','♦️':'♠️'};
-        suit=map[suit]||suit;
-        // Le changement de joueur sera géré séparément dans le rendu
-      }
-    }
+  if(invKey==='SPECIAL_LAST_NOTRANCH'){
+    const ld = lastDigit;
+    if(ld>=6 || ld===0) return {result:suit, detail:`dernier chiffre ${ld} (0 ou 6-9) → 0 inversion`};
+    else return {result:CH_SD[suit]||suit, detail:`dernier chiffre ${ld} (1-5) → ♣↔♥/♠↔♦ → ${SUIT_EMOJI[suit]}→${SUIT_EMOJI[CH_SD[suit]||suit]}`};
   }
-  return suit;
+  return {result:suit, detail:'aucune inversion'};
 }
 
-// ──────────────────────────────────────────────────────────────────
-// CALCUL PRINCIPAL
-// ──────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════
+//  ALGO V4 (conservé)
+// ══════════════════════════════════════════════════════
+function runV4(num, p1Cards, p2Cards, nextNum){
+  const isReduced=String(num).length>=4;
+  const calcNum=isReduced?parseInt(String(num).slice(1),10):num;
+  const calcNextNum=calcNum+1;
+  const time=numToTime(calcNum);
+  const p1First=p1Cards[0], p2First=p2Cards[0];
+  const sHM=signHM(time.h,time.m);
+  const sameCol=isRed(p1First.suit)===isRed(p2First.suit);
+  const sColor=sameCol?'+':'-';
+  const sTotal=(sHM===sColor)?'+':'-';
+  const baseAlgo=sTotal==='+'?1:2;
+  const fibSeq=fibonacci(10);
+  const cardVals=[...p1Cards.slice(0,2).map(c=>cardValue(c.val)||0),...p2Cards.slice(0,2).map(c=>cardValue(c.val)||0)];
+  const sumCards=cardVals.reduce((a,b)=>a+b,0);
+  const sumNum=String(calcNum).split('').reduce((a,c)=>a+parseInt(c,10),0);
+  const fibSeed=calcNum+calcNextNum+sumCards+sumNum;
+  const fibIdx=fibSeed%fibSeq.length;
+  const fibVal=fibSeq[fibIdx];
+  const fibMod=fibVal%4;
+  let algo=baseAlgo;
+  if(fibMod===1) algo=1;
+  else if(fibMod===2) algo=2;
+  else if(fibMod===3) algo=(baseAlgo===1?2:1);
+  const {digit:reducedDigit,steps:reduceSteps}=reduceToDigit(nextNum);
+  const algoEven=algo%2===0, numEven=reducedDigit%2===0;
+  let rule,transformed;
+  if(algoEven===numEven){
+    if(!algoEven){rule='MÊME PARITÉ IMPAIRE → ♣️↔️♠️ / ♦️↔️♥️';const m={'♣️':'♠️','♠️':'♣️','♦️':'♥️','♥️':'♦️'};transformed=m[p2First.suit]||p2First.suit;}
+    else{rule='MÊME PARITÉ PAIRE → ♥️↔️♠️ / ♦️↔️♣️';const m={'♥️':'♠️','♠️':'♥️','♦️':'♣️','♣️':'♦️'};transformed=m[p2First.suit]||p2First.suit;}
+  } else {
+    if(!algoEven){rule='ALGO IMPAIR × RÉDUIT PAIR → ♣️↔️♦️ / ♠️↔️♥️';const m={'♣️':'♦️','♦️':'♣️','♠️':'♥️','♥️':'♠️'};transformed=m[p2First.suit]||p2First.suit;}
+    else{rule='ALGO PAIR × RÉDUIT IMPAIR → ♣️↔️♠️ / ♦️↔️♥️';const m={'♣️':'♠️','♠️':'♣️','♦️':'♥️','♥️':'♦️'};transformed=m[p2First.suit]||p2First.suit;}
+  }
+  const nextTimeTotal=nextNum-1;
+  const nextH=Math.floor(nextTimeTotal/60)%24;
+  const nextM=nextTimeTotal%60;
+  const hPair=nextH%2===0;
+  const inRange=nextNum>=1400&&nextNum<=1441;
+  const postInvActive=hPair||inRange;
+  const postInvMap={'♠️':'♥️','♥️':'♠️','♣️':'♦️','♦️':'♣️'};
+  let postInvReason='';
+  if(hPair&&inRange) postInvReason=`H=${nextH}(PAIR)+#N${nextNum} 1400-1441→INV ♠↔♥/♣↔♦`;
+  else if(hPair) postInvReason=`H=${nextH}(PAIR)→INV ♠↔♥/♣↔♦`;
+  else if(inRange) postInvReason=`#N${nextNum} 1400-1441→INV ♠↔♥/♣↔♦`;
+  else postInvReason=`H=${nextH}(IMPAIR)&hors 1400-1441→PAS D'INV`;
+  const rawResult=postInvActive?(postInvMap[transformed]||transformed):transformed;
+  return {calcNum,calcNextNum,isReduced,time:time.str,p1First,p2First,sHM,sameCol,sColor,sTotal,baseAlgo,fibMod,fibVal,fibIdx,fibSeed,algo,algoEven,numEven,reducedDigit,reduceSteps,rule,transformed,postInvActive,postInvReason,rawResult,postInvSuit:postInvActive?(postInvMap[transformed]||transformed):transformed,trancheInfo:null,reinvInfo:null};
+}
+
+// ══════════════════════════════════════════════════════
+//  ALGO V5+ (conservé)
+// ══════════════════════════════════════════════════════
+function trancheTransform(suit,gameNum){
+  const ti=Math.floor((gameNum-1)/5);
+  const invert=(ti%2===0);
+  const start=ti*5+1,end=start+4;
+  const label=`TRANCHE ${ti+1} (#${start}–#${end})`;
+  const map={'♣️':'♥️','♥️':'♣️','♠️':'♦️','♦️':'♠️'};
+  const transformed=invert?(map[suit]||suit):suit;
+  const ruleLabel=invert?`${label} → INV ♣↔♥/♠↔♦`:`${label} → NORMAL (intact)`;
+  return {transformed,invert,ti,trancheLabel:label,ruleLabel};
+}
+function reinversionStep(suit,postInvActive,gameNum){
+  if(gameNum<1000||gameNum>1440) return {transformed:suit,applied:false,rule:''};
+  let map,rule;
+  if(postInvActive){
+    map={'♣️':'♠️','♠️':'♣️','♦️':'♥️','♥️':'♦️'};
+    rule='REINVERSION PAR COULEURS → ♣↔♠/♦↔♥';
+  } else {
+    map={'♣️':'♦️','♦️':'♣️','♥️':'♠️','♠️':'♥️'};
+    rule='REINVERSION CATEGORIQUE → ♣↔♦/♥↔♠';
+  }
+  return {transformed:map[suit]||suit,applied:true,rule};
+}
+function runV5(num, p1Cards, p2Cards, nextNum){
+  const isReduced=String(num).length>=4;
+  const calcNum=isReduced?parseInt(String(num).slice(1),10):num;
+  const calcNextNum=calcNum+1;
+  const time=numToTime(calcNum);
+  const p1First=p1Cards[0], p2First=p2Cards[0];
+  const sHM=signHM(time.h,time.m);
+  const sameCol=isRed(p1First.suit)===isRed(p2First.suit);
+  const sColor=sameCol?'+':'-';
+  const sTotal=(sHM===sColor)?'+':'-';
+  const baseAlgo=sTotal==='+'?1:2;
+  const fibSeq=fibonacci(10);
+  const cardVals=[...p1Cards.slice(0,2).map(c=>cardValue(c.val)||0),...p2Cards.slice(0,2).map(c=>cardValue(c.val)||0)];
+  const sumCards=cardVals.reduce((a,b)=>a+b,0);
+  const sumNum=String(calcNum).split('').reduce((a,c)=>a+parseInt(c,10),0);
+  const fibSeed=calcNum+calcNextNum+sumCards+sumNum;
+  const fibIdx=fibSeed%fibSeq.length;
+  const fibVal=fibSeq[fibIdx];
+  const fibMod=fibVal%4;
+  let algo=baseAlgo;
+  if(fibMod===1) algo=1;
+  else if(fibMod===2) algo=2;
+  else if(fibMod===3) algo=(baseAlgo===1?2:1);
+  const {digit:reducedDigit,steps:reduceSteps}=reduceToDigit(nextNum);
+  const algoEven=algo%2===0, numEven=reducedDigit%2===0;
+  let rule,transformed;
+  if(algoEven===numEven){
+    if(!algoEven){rule='MÊME PARITÉ IMPAIRE → ♣↔♠/♦↔♥';const m={'♣️':'♠️','♠️':'♣️','♦️':'♥️','♥️':'♦️'};transformed=m[p2First.suit]||p2First.suit;}
+    else{rule='MÊME PARITÉ PAIRE → ♥↔♠/♦↔♣';const m={'♥️':'♠️','♠️':'♥️','♦️':'♣️','♣️':'♦️'};transformed=m[p2First.suit]||p2First.suit;}
+  } else {
+    if(!algoEven){rule='ALGO IMPAIR × RÉDUIT PAIR → ♣↔♦/♠↔♥';const m={'♣️':'♦️','♦️':'♣️','♠️':'♥️','♥️':'♠️'};transformed=m[p2First.suit]||p2First.suit;}
+    else{rule='ALGO PAIR × RÉDUIT IMPAIR → ♣↔♠/♦↔♥';const m={'♣️':'♠️','♠️':'♣️','♦️':'♥️','♥️':'♦️'};transformed=m[p2First.suit]||p2First.suit;}
+  }
+  const nextTimeTotal=nextNum-1;
+  const nextH=Math.floor(nextTimeTotal/60)%24;
+  const nextM=nextTimeTotal%60;
+  const hPair=nextH%2===0;
+  const inRange=nextNum>=1400&&nextNum<=1441;
+  const postInvActive=hPair||inRange;
+  const postInvMap={'♠️':'♥️','♥️':'♠️','♣️':'♦️','♦️':'♣️'};
+  let postInvReason='';
+  if(hPair&&inRange) postInvReason=`H=${nextH}(PAIR)+#N${nextNum} 1400-1441→INV ♠↔♥/♣↔♦`;
+  else if(hPair) postInvReason=`H=${nextH}(PAIR)→INV ♠↔♥/♣↔♦`;
+  else if(inRange) postInvReason=`#N${nextNum} 1400-1441→INV ♠↔♥/♣↔♦`;
+  else postInvReason=`H=${nextH}(IMPAIR)&hors 1400-1441→PAS D'INV`;
+  const postInvSuit=postInvActive?(postInvMap[transformed]||transformed):transformed;
+  const tranche=trancheTransform(postInvSuit,nextNum);
+  const reinv=reinversionStep(tranche.transformed,postInvActive,nextNum);
+  const rawResult=reinv.transformed;
+  return {calcNum,calcNextNum,isReduced,time:time.str,p1First,p2First,sHM,sameCol,sColor,sTotal,baseAlgo,fibMod,fibVal,fibIdx,fibSeed,algo,algoEven,numEven,reducedDigit,reduceSteps,rule,transformed,postInvActive,postInvReason,postInvSuit,trancheInfo:tranche,reinvInfo:reinv,rawResult};
+}
+
+// ══════════════════════════════════════════════════════
+//  CALCUL PRINCIPAL COMBO (adapté avec inversions 900-1441 + P1/P2)
+// ══════════════════════════════════════════════════════
 function runCalc(raw){
-  const parsed=parseGame(raw);
-  const {num,p1,p2,hasClock,hasArrow}=parsed;
-
-  // ── 1️⃣ Gestion des symboles ⏰ / ▶ ───────────────────────────────
-  //   - Pas de ▶ → jeu terminé → ok
-  //   - ▶ dans P2 → on autorise le calcul (banquier doit encore tirer)
-  //   - ▶ dans P1 → on refuse (on attend la prochaine carte)
-  const arrowInP1 = raw.includes('▶') && raw.indexOf('▶') < raw.indexOf(')'); // naïf mais suffit
-  const arrowInP2 = raw.includes('▶') && raw.indexOf('▶') > raw.indexOf(')'); // après première parenthèse
-  if(arrowInP1){
-    throw new Error("⚠ Le symbole ▶ se trouve du côté du joueur (P1). Attente du tirage suivant.");
-  }
-  // Si le ▶ est dans P2, on continue – les données sont suffisantes.
-
+  const {num,p1,p2}=parseGame(raw);
   const nextNum=num+1;
   const nextH=Math.floor((nextNum-1)/60)%24;
   const nextM=(nextNum-1)%60;
   const numStr=String(nextNum);
-  const avantDernier=numStr.length>=2 ? parseInt(numStr[numStr.length-2],10) : parseInt(numStr[0],10);
+  const avantDernier=numStr.length>=2?parseInt(numStr[numStr.length-2],10):parseInt(numStr[0],10);
   const dernierDigit=parseInt(numStr[numStr.length-1],10);
-
   const sel=selectSystem(nextH,nextM,nextNum);
   const algoUsed=sel.algo;
-  const algoResult = (algoUsed==='V4')?runV4(num,p1,p2,nextNum):runV5(num,p1,p2,nextNum);
-
-  // ── 2️⃣ INVERSIONS FINALES (sel.invKey) ─────────────────────────────
+  let algoResult;
+  if(algoUsed==='V4') algoResult=runV4(num,p1,p2,nextNum);
+  else algoResult=runV5(num,p1,p2,nextNum);
   const finalInv=applyFinalInv(algoResult.rawResult, sel.invKey, dernierDigit);
   let finalSuit=finalInv.result;
 
-  // ── 3️⃣ ALL INVERSE (post‑prédiction) ─────────────────────────────────
-  let allInvInfo=null;
-  if(allInverseActive){
-    allInvInfo=applyAllInverse(finalSuit, avantDernier, nextH);
-    finalSuit=allInvInfo.result;
+  // HYPER GLOBAL
+  let hyperGlobal = null;
+  if(String(nextNum).length === 3){
+    const minStr = String(nextM).padStart(2,'0');
+    const minFirstDigit = parseInt(minStr[0], 10);
+    const minFirstImp = (minFirstDigit % 2 !== 0);
+    if(minFirstImp){
+      const numFirstDigit = parseInt(String(nextNum)[0], 10);
+      const numFirstPair  = (numFirstDigit % 2 === 0);
+      let hgMap, hgLabel;
+      if(numFirstPair){
+        hgMap={'♠️':'♣️','♣️':'♠️','♥️':'♦️','♦️':'♥️'};
+        hgLabel=`1er chiffre N°(${numFirstDigit})PAIR → ♠↔♣/♥↔♦`;
+      } else {
+        hgMap={'♠️':'♥️','♥️':'♠️','♣️':'♦️','♦️':'♣️'};
+        hgLabel=`1er chiffre N°(${numFirstDigit})IMPAIR → ♠↔♥/♣↔♦`;
+      }
+      const hgResult = hgMap[finalSuit] || finalSuit;
+      hyperGlobal={active:true,numFirstDigit,numFirstPair,minFirstDigit,minFirstImp,hgLabel,hgMap,before:finalSuit,result:hgResult};
+      finalSuit = hgResult;
+    } else {
+      hyperGlobal={active:false,numFirstDigit:parseInt(String(nextNum)[0],10),minFirstDigit:parseInt(String(nextM).padStart(2,'0')[0],10),minFirstImp:false,hgLabel:`1er chiffre MIN(${parseInt(String(nextM).padStart(2,'0')[0],10)}) PAIR → PAS D'INV HYPER GLOBAL`,before:finalSuit,result:finalSuit};
+    }
   }
 
-  // ── 4️⃣ RANGE INVERSION 900‑1441 & >=1000 (double‑inversion) ────────
-  finalSuit=finalInversionRange(finalSuit,nextNum);
+  // MILIEU PAIR
+  let milieuRule = null;
+  if(String(nextNum).length === 3){
+    const milieuDigit = parseInt(String(nextNum)[1], 10);
+    const milieuPair  = [0,2,4,6,8].includes(milieuDigit);
+    if(milieuPair){
+      const mMap = {'♦️':'♥️','♥️':'♦️','♣️':'♠️','♠️':'♣️'};
+      const before = finalSuit;
+      const result = mMap[finalSuit] || finalSuit;
+      milieuRule={active:true,milieuDigit,before,result,label:`MILIEU=${milieuDigit}(PAIR) → ♦↔♥/♣↔♠`};
+      finalSuit = result;
+    } else {
+      milieuRule={active:false,milieuDigit,before:finalSuit,result:finalSuit,label:`MILIEU=${milieuDigit}(IMPAIR) → INACTIF`};
+    }
 
-  // ── 5️⃣ DÉTERMINATION DU POSSESSSEUR (P1 / P2) ───────────────────────
-  let player; // 'P1' or 'P2'
-  const avantPair = (avantDernier%2===0);
-  const lastIn15 = (dernierDigit>=1 && dernierDigit<=5);
-  if(avantPair){
-    player = lastIn15 ? 'P2' : 'P1';
-  }else{
-    player = lastIn15 ? 'P1' : 'P2';
+    const milieuDigitForAuto = parseInt(String(nextNum)[1], 10);
+    const firstDigitForAuto  = parseInt(String(nextNum)[0], 10);
+    const autoResult = autoMilieuInverse(milieuDigitForAuto, nextM, firstDigitForAuto);
+    milieuRule.autoResult = autoResult;
   }
 
-  // ── 6️⃣ AUTO‑MILIEU (pilote le bouton ALL INVERSE) ───────────────────
-  const autoResult = autoMilieuInverse(parseInt(numStr[1]||'0',10), nextM, parseInt(numStr[0],10));
-  // on retourne cet objet pour l’UI – le flag manuel sera réinitialisé dans calculate()
+  // ─── NOUVELLE RÈGLE : Inversion couleurs 900 à 1441 ───
+  let finalDisplaySuit = finalSuit;
+  if(nextNum >= 900 && nextNum <= 1441){
+    const swap = {'♣️':'♥️','♥️':'♣️','♠️':'♦️','♦️':'♠️'};
+    finalDisplaySuit = swap[finalSuit] || finalSuit;
+  }
 
-  return {
-    num,nextNum,nextH,nextM,avantDernier,dernierDigit,
-    sel,algoUsed,algoResult,finalInv,finalSuit,
-    allInvInfo,player,
-    autoMilieu:autoResult
-  };
+  // ─── Attribution P1 / P2 ───
+  const pLabel = getPAssignment(nextNum);
+
+  return {num,nextNum,nextH,nextM,avantDernier,dernierDigit,sel,algoUsed,algoResult,finalInv,finalSuit,hyperGlobal,milieuRule, finalDisplaySuit, pLabel};
 }
 
-// ──────────────────────────────────────────────────────────────────
-// UI
-// ──────────────────────────────────────────────────────────────────
-function showError(msg){ const b=document.getElementById('error-box'); b.textContent='⚠ '+msg; b.style.display='block'; }
-function hideError(){ document.getElementById('error-box').style.display='none'; }
+// ══════════════════════════════════════════════════════
+//  UI (adapté pour format court)
+// ══════════════════════════════════════════════════════
+function showError(msg){const b=document.getElementById('error-box');b.textContent='⚠ '+msg;b.style.display='block';}
+function hideError(){document.getElementById('error-box').style.display='none';}
 
 function calculate(){
   hideError();
   const raw=document.getElementById('game-input').value.trim();
   if(!raw){showError("Veuillez saisir les données du jeu précédent.");return;}
   const btn=document.getElementById('btn-calc');
-  btn.classList.add('loading'); btn.textContent='⟳ CALCUL EN COURS…';
+  btn.classList.add('loading');btn.textContent='⟳ CALCUL EN COURS…';
   setTimeout(()=>{
     try{
       const r=runCalc(raw);
       lastCalcResult=r;
 
-      // --- AUTO MILIEU -------------------------------------------------
-      allInverseManual=false;
-      const badge=document.getElementById('auto-mode-badge');
-      const ar=r.autoMilieu;
-      setAllInverseAuto(ar.shouldBeOn);
-      badge.textContent=`⟳ AUTO — ${ar.reason}`;
-      badge.className=`auto-mode-badge show ${ar.shouldBeOn?'auto-on':'auto-off'}`;
+      allInverseManual = false;
+      const autoBadge = document.getElementById('auto-mode-badge');
+      if(r.milieuRule && r.milieuRule.autoResult){
+        const ar = r.milieuRule.autoResult;
+        setAllInverseAuto(ar.shouldBeOn);
+        autoBadge.textContent = `⟳ AUTO — ${ar.autoReason}`;
+        autoBadge.className = `auto-mode-badge show ${ar.shouldBeOn ? 'auto-on' : 'auto-off'}`;
+      } else {
+        autoBadge.className = 'auto-mode-badge';
+      }
 
       renderResult(r);
       document.getElementById('game-input').value='';
     }catch(e){showError(e.message);}
-    btn.classList.remove('loading'); btn.textContent='⬡ CALCULER LA PRÉDICTION ⬡';
+    btn.classList.remove('loading');btn.textContent='⬡ CALCULER LA PRÉDICTION ⬡';
   },300);
 }
 
 function renderResult(r){
-  const displaySuit=r.finalSuit;
-  const player=r.player;
-  const emoji=SUIT_EMOJI[displaySuit]||displaySuit;
-
-  // ── Affichage principal ────────────────────────────────────────
-  document.getElementById('res-num').textContent=`#N${r.nextNum}`;
-  document.getElementById('res-suit-emoji').innerHTML=`${emoji}${player}`;
-  document.getElementById('res-suit-label').textContent=''; // on ne montre pas le nom du symbole
-
-  // ── Banner ALL INVERSE (si actif) ─────────────────────────────────
-  const banner=document.getElementById('allinv-banner');
-  if(r.allInvInfo){
-    banner.textContent=`⟲ MODE INVERSÉE ACTIF — ${r.allInvInfo.label} — ${SUIT_EMOJI[r.allInvInfo.before]} → ${SUIT_EMOJI[r.allInvInfo.result]}`;
-    banner.classList.add('show');
-  }else banner.classList.remove('show');
-
-  // ── Badges (conservés, adaptation mineure) ───────────────────────
   const ar=r.algoResult;
+
+  let displaySuit = r.finalDisplaySuit || r.finalSuit;
+  let allInvInfo  = null;
+  if(allInverseActive){
+    allInvInfo = applyAllInverse(displaySuit, r.avantDernier, r.nextH);
+    displaySuit = allInvInfo.result;
+  }
+
+  const pLabel = r.pLabel || getPAssignment(r.nextNum);
+
+  document.getElementById('res-num').textContent=`#N${r.nextNum}`;
+  const red=isRed(displaySuit);
+  document.getElementById('res-suit-emoji').innerHTML=
+    `<span style="color:${red?'#cc4444':'var(--ivory)'}">${SUIT_EMOJI[displaySuit]||displaySuit}</span>`;
+
+  // Format court demandé : #Nxxx♠️P2
+  document.getElementById('res-suit-label').textContent = `#N${r.nextNum}${displaySuit}${pLabel}`;
+
+  // Banner ALL INVERSE (conservé mais discret)
+  const banner = document.getElementById('allinv-banner');
+  if(allInverseActive && allInvInfo){
+    banner.textContent = `⟲ ALL INVERSE — ${allInvInfo.label}`;
+    banner.classList.add('show');
+  } else {
+    banner.classList.remove('show');
+  }
+
+  // Badges (conservés pour analyse)
+  const hParite=r.nextH%2===0?'PAIR':'IMPAIR';
+  const avantDernierParite=r.avantDernier%2===0?'PAIR':'IMPAIR';
+  const minTranche=r.nextM<=11?'00-11':'12-59';
+  const selectorLine=`GROUPE ${[1,2,3,4,5,6,7,8,9,20,21,22,23,24,0].includes(r.nextH)?'A':'B'} · H=${r.nextH}(${hParite}) · AV-DERN=${r.avantDernier}(${avantDernierParite}) · MIN=${r.nextM}(${minTranche}) → ${r.algoUsed} + ${r.sel.invLabel}`;
+  const fibOverrideLabel=ar.fibMod===0?'ALGO NORMAL CONSERVÉ':ar.fibMod===1?'FIB FORCE ALGO 1':ar.fibMod===2?'FIB FORCE ALGO 2':'FIB INVERSE ALGO';
+  const algoParity=ar.algoEven?`${ar.algo} (PAIR)`:`${ar.algo} (IMPAIR)`;
+  const numParity=ar.numEven?`${ar.reducedDigit} (PAIR)`:`${ar.reducedDigit} (IMPAIR)`;
+
+  let autoMilieuBadge = '';
+  if(r.milieuRule && r.milieuRule.autoResult){
+    const am = r.milieuRule.autoResult;
+    autoMilieuBadge = `<div class="badge badge-automilieu">🔁 AUTO ALL INVERSE — ${am.autoReason} → BOUTON : ${am.shouldBeOn?'ON ✓':'OFF ✗'}</div>`;
+  }
+
   const badges=[
-    `<div class="badge badge-selector">🎯 SÉLECTEUR — GROUPE ${( [1,2,3,4,5,20,21,22,23,24,0].includes(r.nextH) ? 'A' : 'B') } · H=${r.nextH} · AV‑DERN=${r.avantDernier} · MIN=${r.nextM} → ${r.algoUsed} + ${r.sel.invLabel}</div>`,
-    `<div class="badge badge-algo">⚙ ALGO ${r.algoUsed} – BASE ${ar.baseAlgo} – FIB ${ar.fibMod===0?'NORMAL':ar.fibMod===1?'FORCE 1':ar.fibMod===2?'FORCE 2':'INVERSE'}</div>`,
-    `<div class="badge badge-parity">◈ PARITÉ – ${ar.algoEven?'PAIR':'IMPAIR'} – #N${r.nextNum} REDUCED ${ar.reduceSteps.join(' → ')} → ${ar.reducedDigit} ${ar.numEven?'PAIR':'IMPAIR'}</div>`,
-    `<div class="badge badge-transform">⚡ ${ar.rule}</div>`,
-    ...(ar.postInvActive ? [`<div class="badge badge-postinv">🔄 POST‑INV – ${ar.postInvReason}</div>`] : []),
-    ...(ar.trancheInfo ? [`<div class="badge badge-tranche">♣ TRANCHE/5 – ${ar.trancheInfo.ruleLabel}</div>`] : []),
-    ...(ar.reinvInfo && ar.reinvInfo.applied ? [`<div class="badge badge-reinv">🔁 REINVERSION – ${ar.reinvInfo.rule}</div>`] : []),
-    `<div class="badge badge-finalinv">✦ INV FINALE – ${r.sel.invLabel} – ${r.finalInv.detail}</div>`,
-    `<div class="badge badge-hyper">${r.nextNum>=900 && r.nextNum<=1441 ? '⚡⚡ INV 900‑1441' : ''}</div>`,
-    `<div class="badge badge-allinv">${r.allInvInfo ? `⟲ ALL INVERSE ON – ${r.allInvInfo.label}` : `⟲ ALL INVERSE OFF`}</div>`
+    `<div class="badge badge-selector">🎯 SÉLECTEUR — ${selectorLine}</div>`,
+    `<div class="badge badge-algo">⚙ ALGO ${r.algoUsed} — BASE : ALGO ${ar.baseAlgo} · ${fibOverrideLabel} → ALGO FINAL : ALGO ${ar.algo}</div>`,
+    `<div class="badge badge-parity">◈ PARITÉ — ALGO ${algoParity} · #N${r.nextNum} RÉDUIT = ${ar.reduceSteps.join(' → ')} → ${numParity}</div>`,
+    `<div class="badge badge-transform">⚡ RÈGLE — ${ar.rule}</div>`,
+    ...(ar.postInvActive?[`<div class="badge badge-postinv">🔄 POST-INV — ${ar.postInvReason}</div>`]:[]),
+    ...(ar.trancheInfo?[`<div class="badge badge-tranche">♣ TRANCHE/5 — ${ar.trancheInfo.ruleLabel}</div>`]:[]),
+    ...(ar.reinvInfo&&ar.reinvInfo.applied?[`<div class="badge badge-reinv">🔁 REINVERSION — ${ar.reinvInfo.rule}</div>`]:[]),
+    `<div class="badge badge-finalinv">✦ INV FINALE ${r.sel.invLabel}</div>`,
+    ...(r.hyperGlobal ? (r.hyperGlobal.active
+      ? [`<div class="badge badge-hyper">⚡⚡ INV HYPER GLOBAL (3 chiffres) — MIN 1er chiffre=${r.hyperGlobal.minFirstDigit}(IMPAIR) · ${r.hyperGlobal.hgLabel}</div>`]
+      : [`<div class="badge badge-hyper" style="opacity:.45">⚡⚡ HYPER GLOBAL (3 chiffres) — MIN 1er chiffre=${r.hyperGlobal.minFirstDigit}(PAIR) → INACTIF</div>`]
+    ) : []),
+    ...(r.milieuRule ? (r.milieuRule.active
+      ? [`<div class="badge badge-milieu">◉ MILIEU PAIR (3 chiffres) — ${r.milieuRule.label}</div>`]
+      : [`<div class="badge badge-milieu" style="opacity:.45">◉ MILIEU (3 chiffres) — ${r.milieuRule.label}</div>`]
+    ) : []),
+    autoMilieuBadge,
+    allInverseActive && allInvInfo
+      ? `<div class="badge badge-allinv">⟲ ALL INVERSE ON</div>`
+      : `<div class="badge badge-allinv" style="opacity:.3">⟲ ALL INVERSE OFF</div>`
   ];
   document.getElementById('badge-zone').innerHTML=badges.join('');
 
-  // ── Détails (conservés, ajout du joueur) ───────────────────────────
+  // Détails conservés
+  const p1c=isRed(ar.p1First.suit)?'+':'-';
+  const p2c=isRed(ar.p2First.suit)?'+':'-';
+  const fibModLabels=['ALGO NORMAL CONSERVÉ','FORCER ALGO 1','FORCER ALGO 2','INVERSER ALGO'];
   let detailsHTML=`
 <div class="det-row"><span class="det-label">Jeu fourni</span><span class="det-val">#N${r.num}</span></div>
 <div class="det-row"><span class="det-label">Jeu prédit</span><span class="det-val">#N${r.nextNum}</span></div>
-<div class="det-row"><span class="det-label">Heure prédit</span><span class="det-val">${String(r.nextH).padStart(2,'0')}h${String(r.nextM).padStart(2,'0')}</span></div>
-<div class="det-row"><span class="det-label">Avant‑dernier</span><span class="det-val hi-green">${r.avantDernier} (${r.avantDernier%2===0?'PAIR':'IMPAIR'})</span></div>
-<div class="det-row"><span class="det-label">Dernier</span><span class="det-val hi-green">${r.dernierDigit}</span></div>
+<div class="det-row"><span class="det-label">Heure jeu prédit</span><span class="det-val">${String(r.nextH).padStart(2,'0')}h${String(r.nextM).padStart(2,'0')}</span></div>
+<div class="det-row"><span class="det-label">Avant-dernier chiffre #N${r.nextNum}</span><span class="det-val hi-green">${r.avantDernier} (${r.avantDernier%2===0?'PAIR':'IMPAIR'})</span></div>
+<div class="det-row"><span class="det-label">Dernier chiffre #N${r.nextNum}</span><span class="det-val hi-green">${r.dernierDigit}</span></div>
 <hr class="det-sep">
-<div class="det-row"><span class="det-label">Sélection</span><span class="det-val hi-green">${r.algoUsed}</span></div>
-<div class="det-row"><span class="det-label">INV FINAL</span><span class="det-val hi-green">${r.sel.invLabel}</span></div>
+<div class="det-row"><span class="det-label" style="color:#80e080">🎯 ALGO SÉLECTIONNÉ</span><span class="det-val hi-green">${r.algoUsed}</span></div>
 <hr class="det-sep">
-<div class="det-row"><span class="det-label">Résultat brut</span><span class="det-val">${SUIT_EMOJI[ar.rawResult]}</span></div>`;
-  if(r.allInvInfo){
+<div class="det-row"><span class="det-label">Signe H&M (${ar.time})</span><span class="det-val hi">${ar.sHM}</span></div>
+<div class="det-row"><span class="det-label">P1 — ${ar.p1First.val}${SUIT_EMOJI[ar.p1First.suit]} couleur</span><span class="det-val">${p1c}</span></div>
+<div class="det-row"><span class="det-label">P2 — ${ar.p2First.val}${SUIT_EMOJI[ar.p2First.suit]} couleur</span><span class="det-val">${p2c}</span></div>
+<div class="det-row"><span class="det-label">Même couleur P1/P2 ?</span><span class="det-val">${ar.sameCol?'OUI':'NON'} → ${ar.sColor}</span></div>
+<div class="det-row"><span class="det-label">H&M × Couleur</span><span class="det-val">${ar.sHM} × ${ar.sColor} = ${ar.sTotal} → BASE ALGO ${ar.baseAlgo}</span></div>
+<hr class="det-sep">
+<div class="det-row"><span class="det-label">Fibonacci — graine ${ar.fibSeed}</span><span class="det-val hi-blue">F[${ar.fibIdx}]=${ar.fibVal} → mod4=${ar.fibMod}</span></div>
+<div class="det-row"><span class="det-label">Action Fibonacci</span><span class="det-val hi-blue">${fibModLabels[ar.fibMod]}</span></div>
+<div class="det-row"><span class="det-label">ALGO FINAL</span><span class="det-val hi">ALGO ${ar.algo} (${ar.algoEven?'PAIR':'IMPAIR'})</span></div>
+<hr class="det-sep">
+<div class="det-row"><span class="det-label">Réduction #N${r.nextNum}</span><span class="det-val hi-blue">${ar.reduceSteps.join(' → ')} → ${ar.reducedDigit} (${ar.numEven?'PAIR':'IMPAIR'})</span></div>
+<div class="det-row"><span class="det-label">1ère carte Banquier (P2)</span><span class="det-val">${ar.p2First.val}${SUIT_EMOJI[ar.p2First.suit]}</span></div>
+<div class="det-row"><span class="det-label">Règle parité</span><span class="det-val hi-violet">${ar.rule}</span></div>
+<div class="det-row"><span class="det-label">Après transformation</span><span class="det-val hi-violet">${SUIT_EMOJI[ar.p2First.suit]} → ${SUIT_EMOJI[ar.transformed]}</span></div>`;
+
+  if(ar.postInvActive){
     detailsHTML+=`
-<hr class="det-sep">
-<div class="det-row"><span class="det-label">ALL INVERSE</span><span class="det-val hi-pink">${r.allInvInfo.label}</span></div>`;
+<div class="det-row"><span class="det-label" style="color:#e8a020">⚠ POST-INV</span><span class="det-val" style="color:#e8a020">${ar.postInvReason}</span></div>`;
   }
+  if(ar.trancheInfo){
+    detailsHTML+=`<div class="det-row"><span class="det-label" style="color:#4ecdc4">TRANCHE/5</span><span class="det-val hi-teal">${ar.trancheInfo.ruleLabel}</span></div>`;
+  }
+  if(ar.reinvInfo&&ar.reinvInfo.applied){
+    detailsHTML+=`<div class="det-row"><span class="det-label" style="color:#a0c8ff">REINVERSION</span><span class="det-val hi-violet">${ar.reinvInfo.rule}</span></div>`;
+  }
+
   detailsHTML+=`
 <hr class="det-sep">
-<div class="det-row"><span class="det-label">DESTINATAIRE</span><span class="det-val hi">${player}</span></div>
-<hr class="det-sep">
-<div class="det-row"><span class="det-label">Résultat final</span><span class="det-result">#N${r.nextNum} — ${emoji}${player}</span></div>`;
+<div class="det-row"><span class="det-label">Résultat brut</span><span class="det-val">${SUIT_EMOJI[ar.rawResult]}</span></div>`;
+
+  if(r.hyperGlobal && r.hyperGlobal.active){
+    detailsHTML+=`<div class="det-row"><span class="det-label" style="color:#ffaaff">HYPER GLOBAL</span><span class="det-val" style="color:#ffaaff">${r.hyperGlobal.hgLabel}</span></div>`;
+  }
+  if(r.milieuRule && r.milieuRule.active){
+    detailsHTML+=`<div class="det-row"><span class="det-label" style="color:#66eeff">MILIEU PAIR</span><span class="det-val" style="color:#66eeff">${r.milieuRule.label}</span></div>`;
+  }
+
+  // Inversion 900-1441
+  if(r.nextNum >= 900 && r.nextNum <= 1441){
+    detailsHTML+=`<div class="det-row"><span class="det-label" style="color:#ff99ff">INV 900-1441 (♣↔♥ / ♠↔♦)</span><span class="det-val" style="color:#ff99ff">APPLIQUÉE</span></div>`;
+  }
+
+  detailsHTML+=`
+<div class="det-row"><span class="det-label">Attribution P1/P2</span><span class="det-val det-result">${pLabel}</span></div>
+<div class="det-row"><span class="det-label">RÉSULTAT FINAL</span><span class="det-val det-result">#N${r.nextNum} — ${SUIT_EMOJI[displaySuit]} ${pLabel}</span></div>`;
+
   document.getElementById('details-body').innerHTML=detailsHTML;
 
   const zone=document.getElementById('result-zone');
@@ -684,14 +998,12 @@ function renderResult(r){
   setTimeout(()=>zone.scrollIntoView({behavior:'smooth',block:'start'}),100);
 }
 
-// ── Copie (format #N<number><emoji>P1/P2) ───────────────────────────
 function copyPrediction(){
-  const num=document.getElementById('res-num').textContent;
-  const emoji=document.getElementById('res-suit-emoji').textContent.trim();
-  navigator.clipboard.writeText(`${num} ${emoji}`).then(()=>{
+  const text = document.getElementById('res-suit-label').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
     const btn=document.getElementById('btn-copy');
-    btn.textContent='✓ COPIÉ'; btn.classList.add('copied');
-    setTimeout(()=>{btn.textContent='⧉ COPIER LA PRÉDICTION'; btn.classList.remove('copied');},1800);
+    btn.textContent='✓ COPIÉ';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='⧉ COPIER LA PRÉDICTION';btn.classList.remove('copied');},1800);
   });
 }
 function toggleDetails(){
@@ -702,29 +1014,34 @@ document.getElementById('game-input').addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();calculate();}
 });
 
-// ── LIVE FETCH (inchangé) ─────────────────────────────────────────────
-let liveAutoTimer=null;
-let liveLastMessageId=null;
-function setLiveStatus(msg){document.getElementById('live-status').textContent=msg;}
-function setLiveSource(payload){
-  const box=document.getElementById('live-source');
-  if(!box) return;
-  box.innerHTML=`<small>Dernière donnée chargée</small>${payload.normalized}<br><br><span style="color:#7ea6cc">Source : <a href="${payload.source_url}" target="_blank" rel="noopener" style="color:#7fb6e8">message Telegram</a> · ${payload.published_at||'heure inconnue'}</span>`;
+let liveAutoTimer = null;
+let liveLastMessageId = null;
+
+function setLiveStatus(msg){
+  const box = document.getElementById('live-status');
+  if(box) box.textContent = msg;
 }
+
+function setLiveSource(payload){
+  const box = document.getElementById('live-source');
+  if(!box) return;
+  box.innerHTML = `<small>Dernière donnée chargée</small>${payload.normalized}<br><br><span style="color:#7ea6cc">Source : <a href="${payload.source_url}" target="_blank" rel="noopener" style="color:#7fb6e8">message Telegram</a> · ${payload.published_at || 'heure inconnue'}</span>`;
+}
+
 async function fetchLatestTelegramGame(silent=false){
-  const btn=document.getElementById('btn-live-fetch');
+  const btn = document.getElementById('btn-live-fetch');
   try{
     if(btn && !silent){ btn.classList.add('loading'); btn.textContent='⟳ SYNCHRO…'; }
     setLiveStatus('Connexion au canal Telegram en cours…');
-    const res=await fetch('/api/latest-game');
+    const res = await fetch('/api/latest-game');
     if(!res.ok) throw new Error('Réponse serveur invalide');
-    const data=await res.json();
+    const data = await res.json();
     if(!data || !data.normalized) throw new Error('Aucune donnée exploitable trouvée');
-    document.getElementById('game-input').value=data.normalized;
+    document.getElementById('game-input').value = data.normalized;
     setLiveSource(data);
-    const isNew=liveLastMessageId!==data.message_id;
-    liveLastMessageId=data.message_id;
-    setLiveStatus(`Canal synchronisé · ${isNew?'nouveau jeu détecté':'dernier jeu confirmé'} · #N${data.game_number}`);
+    const isNew = liveLastMessageId !== data.message_id;
+    liveLastMessageId = data.message_id;
+    setLiveStatus(`Canal synchronisé · ${isNew ? 'nouveau jeu détecté' : 'dernier jeu confirmé'} · #N${data.game_number}`);
     calculate();
   }catch(err){
     setLiveStatus(`Erreur de synchronisation Telegram : ${err.message}`);
@@ -732,15 +1049,26 @@ async function fetchLatestTelegramGame(silent=false){
     if(btn && !silent){ btn.classList.remove('loading'); btn.textContent='⟳ Synchroniser le dernier jeu'; }
   }
 }
+
 function toggleLiveAutoRefresh(){
-  const btn=document.getElementById('btn-live-auto');
-  if(liveAutoTimer){ clearInterval(liveAutoTimer); liveAutoTimer=null; btn.textContent='AUTO REFRESH OFF'; setLiveStatus('Auto‑refresh désactivé.'); return;}
-  liveAutoTimer=setInterval(()=>fetchLatestTelegramGame(true),20000);
-  btn.textContent='AUTO REFRESH ON';
-  setLiveStatus('Auto‑refresh activé : vérification toutes les 20 s.');
+  const btn = document.getElementById('btn-live-auto');
+  if(liveAutoTimer){
+    clearInterval(liveAutoTimer);
+    liveAutoTimer = null;
+    btn.textContent = 'AUTO REFRESH OFF';
+    setLiveStatus('Auto-refresh désactivé.');
+    return;
+  }
+  liveAutoTimer = setInterval(()=>fetchLatestTelegramGame(true), 20000);
+  btn.textContent = 'AUTO REFRESH ON';
+  setLiveStatus('Auto-refresh activé : vérification toutes les 20 secondes.');
   fetchLatestTelegramGame(true);
 }
-window.addEventListener('load',()=>fetchLatestTelegramGame(true));
+
+window.addEventListener('load', ()=>{
+  fetchLatestTelegramGame(true);
+});
+
 </script>
 </body>
 </html>
