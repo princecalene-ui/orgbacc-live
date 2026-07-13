@@ -57,6 +57,19 @@
   }
   @keyframes inv-pulse{0%,100%{box-shadow:0 0 20px #cc44ff55,inset 0 0 10px #8b2aaa22}50%{box-shadow:0 0 36px #cc44ffaa,inset 0 0 20px #8b2aaa44}}
 
+  #btn-brain{border-color:#7a6028;color:#e8c060}
+  #btn-brain:hover{border-color:#ffd166;box-shadow:0 0 18px #ffd16655;}
+  #btn-brain.active{
+    background:linear-gradient(135deg,#1a1400,#2a2000);
+    border-color:#ffd166;color:#ffd166;
+    box-shadow:0 0 24px #ffd16666,inset 0 0 12px #c9a84c22;
+    animation:brain-pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes brain-pulse{0%,100%{box-shadow:0 0 20px #ffd16655,inset 0 0 10px #c9a84c22}50%{box-shadow:0 0 36px #ffd166aa,inset 0 0 20px #c9a84c44}}
+  #btn-brain.active .toggle-track{background:#5a4a1a;border-color:#ffd166;}
+  #btn-brain.active .toggle-thumb{left:22px;background:#ffe699;}
+  #btn-brain.active .allinv-status{background:#2a2000;border-color:#ffd166;color:#ffe699;}
+
   /* Toggle switch intégré */
   .toggle-track{
     width:40px;height:20px;border-radius:10px;
@@ -125,6 +138,63 @@
   }
 
   #result-zone{display:none}
+
+  /* ─── HISTORIQUE ─── */
+  .history-card{
+    margin-top:26px;background:var(--card-bg);border:1px solid var(--border);
+    border-radius:6px;padding:18px 16px 20px;
+  }
+  .history-head{
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;
+  }
+  .history-title{
+    font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:.14em;color:var(--gold);
+  }
+  .btn-clear-hist{
+    background:none;border:1px solid var(--border);color:var(--ivory-dim);
+    font-family:'Rajdhani',sans-serif;font-size:.72rem;letter-spacing:.08em;
+    padding:5px 10px;border-radius:3px;cursor:pointer;text-transform:uppercase;
+  }
+  .btn-clear-hist:hover{border-color:var(--crimson);color:var(--crimson)}
+  .history-stats{
+    display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;font-size:.78rem;
+    color:var(--ivory-dim);letter-spacing:.04em;
+  }
+  .history-stats b{color:var(--ivory);font-weight:700}
+  .history-stats .stat-ok b{color:var(--green-ok)}
+  .history-stats .stat-ko b{color:var(--red)}
+  .history-empty{color:var(--ivory-dim);font-size:.82rem;text-align:center;padding:14px 0}
+  .history-autoval{
+    display:none;font-size:.78rem;padding:8px 10px;border-radius:3px;margin-bottom:10px;
+    background:#0b1118;border:1px solid #203247;color:#b8d8f7;
+  }
+  .history-autoval.ok{border-color:var(--green-ok);color:#8fd6b3}
+  .history-autoval.ko{border-color:var(--crimson);color:#e89aa3}
+  .hist-tag.hist-brain{color:#9c7cff}
+  .history-list{display:flex;flex-direction:column;gap:8px}
+  .history-item{
+    display:flex;align-items:center;gap:10px;background:var(--deep);
+    border:1px solid var(--border);border-radius:4px;padding:9px 10px;
+    font-family:'Courier Prime',monospace;font-size:.82rem;
+  }
+  .history-item.status-valid{border-color:var(--green-ok)}
+  .history-item.status-invalid{border-color:var(--crimson)}
+  .hist-num{color:var(--gold);font-weight:700;min-width:64px}
+  .hist-suit{font-size:1rem;min-width:22px;text-align:center}
+  .hist-label{color:var(--ivory);flex:1;font-size:.78rem}
+  .hist-tag{font-size:.65rem;color:var(--ivory-dim);letter-spacing:.06em}
+  .hist-actions{display:flex;gap:6px}
+  .hist-btn{
+    width:30px;height:30px;border-radius:4px;border:1px solid var(--border);
+    background:var(--card-bg);color:var(--ivory-dim);cursor:pointer;font-size:.95rem;
+    display:flex;align-items:center;justify-content:center;transition:all .15s;
+  }
+  .hist-btn.valid-btn:hover,.hist-btn.valid-btn.active{
+    border-color:var(--green-ok);color:var(--green-ok);background:#2d6a4f22;
+  }
+  .hist-btn.invalid-btn:hover,.hist-btn.invalid-btn.active{
+    border-color:var(--crimson);color:var(--red);background:#cc444422;
+  }
   .result-card{
     background:var(--card-bg);border:1px solid var(--border);border-top:2px solid var(--gold);
     border-radius:4px;padding:28px 22px 22px;position:relative;
@@ -142,9 +212,12 @@
     animation:pulse-glow 2.5s ease-in-out infinite;
   }
   @keyframes pulse-glow{0%,100%{filter:drop-shadow(0 0 20px #c9a84c55)}50%{filter:drop-shadow(0 0 40px #c9a84caa)}}
-  .prediction-suit-label{
+  .prediction-side{
     text-align:center;font-family:'Cinzel',serif;font-size:clamp(1.8rem,8vw,3rem);font-weight:900;
     color:var(--gold);letter-spacing:.15em;margin-bottom:12px;
+  }
+  .prediction-side .side-tag{
+    display:inline-block;padding:2px 16px;border:2px solid var(--gold);border-radius:4px;
   }
 
   /* Badge ALL INVERSE actif sous la prédiction */
@@ -179,6 +252,10 @@
   .badge-row{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
   .badge{border-radius:3px;padding:9px 14px;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;text-align:center}
 
+  .badge-range2{background:linear-gradient(135deg,#001a14,#00281e);border:1px solid #1a8a6a;border-left:3px solid #2ee0aa;color:#7ff0cc;font-weight:700;animation:flicker-range2 3s ease-in-out infinite;}
+  @keyframes flicker-range2{0%,100%{box-shadow:0 0 8px #2ee0aa44}50%{box-shadow:0 0 18px #2ee0aa88}}
+  .badge-side{background:linear-gradient(135deg,#1a1000,#2a1c00);border:1px solid #a67c1a;border-left:3px solid #e0a83a;color:#f0c070;font-weight:700;animation:flicker-side 3s ease-in-out infinite;}
+  @keyframes flicker-side{0%,100%{box-shadow:0 0 10px #e0a83a44}50%{box-shadow:0 0 22px #e0a83a88}}
   .badge-selector{background:linear-gradient(135deg,#0a1a0a,#122012);border:1px solid #2a6a2a;border-left:3px solid #4caf50;color:#80e080;animation:flicker-green 3s ease-in-out infinite;}
   @keyframes flicker-green{0%,100%{box-shadow:0 0 8px #4caf5044}50%{box-shadow:0 0 18px #4caf5088}}
   .badge-algo{background:linear-gradient(135deg,#120f00,#261f05);border:1px solid #8a6c18;border-left:3px solid #e0bf59;color:#f1d57a;animation:flicker-gold 3s ease-in-out infinite;}
@@ -217,6 +294,15 @@
     animation:flicker-automilieu 3s ease-in-out infinite;
   }
   @keyframes flicker-automilieu{0%,100%{box-shadow:0 0 8px #7aadff33}50%{box-shadow:0 0 18px #7aadff77}}
+
+  /* Badge CERVEAU INTELLIGENT */
+  .badge-brain{
+    background:linear-gradient(135deg,#1a1400,#2a2000);
+    border:1px solid #c9a84c;border-left:3px solid #ffd166;
+    color:#ffd166;font-weight:700;
+    animation:flicker-brain 2.4s ease-in-out infinite;
+  }
+  @keyframes flicker-brain{0%,100%{box-shadow:0 0 10px #ffd16655}50%{box-shadow:0 0 26px #ffd166aa}}
 
   .copy-row{display:flex;justify-content:center;margin-bottom:24px}
   .details-toggle{
@@ -325,11 +411,25 @@
     </div>
   </div>
 
+  <!-- BOUTON CERVEAU INTELLIGENT -->
+  <div class="allinv-wrap">
+    <div class="allinv-center">
+      <button class="btn-allinv active" id="btn-brain" onclick="toggleBrain()">
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+        <div class="allinv-label-wrap">
+          <span class="allinv-title">🧠 CERVEAU INTELLIGENT</span>
+          <span class="allinv-rule">Analyse les 10 derniers jeux résolus · bascule la prédiction si dérive détectée (3 échecs d'affilée ou taux &lt;30%)</span>
+        </div>
+        <span class="allinv-status" id="brain-status">ON</span>
+      </button>
+    </div>
+  </div>
+
   <div id="result-zone">
     <div class="result-card">
       <div class="next-game-num" id="res-num"></div>
       <div class="prediction-suit" id="res-suit-emoji"></div>
-      <div class="prediction-suit-label" id="res-suit-label"></div>
+      <div class="prediction-side" id="res-side"></div>
       <div class="allinv-active-banner" id="allinv-banner"></div>
       <div class="copy-row">
         <button class="btn-copy" id="btn-copy" onclick="copyPrediction()">⧉ COPIER LA PRÉDICTION</button>
@@ -343,6 +443,16 @@
       <div class="details-body" id="details-body"></div>
     </div>
   </div>
+
+  <div class="history-card" id="history-card">
+    <div class="history-head">
+      <span class="history-title">◆ HISTORIQUE DES PRÉDICTIONS ◆</span>
+      <button class="btn-clear-hist" id="btn-clear-hist" onclick="clearHistory()">Effacer</button>
+    </div>
+    <div class="history-stats" id="history-stats"></div>
+    <div class="history-autoval" id="history-autoval"></div>
+    <div class="history-list" id="history-list"></div>
+  </div>
 </main>
 
 <footer>ORG BACC COMBO · X_Code · ♠️ ♥️ ♣️ ♦️</footer>
@@ -354,6 +464,206 @@
 let allInverseActive = false;
 let allInverseManual = false;  // true = toggled manually, false = driven by auto-milieu
 let lastCalcResult   = null;
+let brainActive      = true;   // cerveau intelligent actif par défaut
+
+// ══════════════════════════════════════════════════════
+//  HISTORIQUE DES PRÉDICTIONS (persisté localStorage)
+// ══════════════════════════════════════════════════════
+const HIST_KEY = 'orgbacc_history_v1';
+
+function loadHistory(){
+  try{
+    const raw = localStorage.getItem(HIST_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function saveHistory(list){
+  try{ localStorage.setItem(HIST_KEY, JSON.stringify(list)); }catch(e){}
+}
+
+// Une seule entrée par numéro de jeu prédit : si elle existe déjà et est encore
+// en attente, on la met à jour (pas de doublon) ; si elle est déjà résolue, on n'y touche pas ;
+// sinon on la crée.
+function upsertHistoryEntry(gameNum, suitKey, side, modeTag, brainInfo){
+  const list = loadHistory();
+  const existing = list.find(e=>e.gameNum===gameNum);
+  const brainBase = brainInfo && brainInfo.triggered ? brainInfo.baseSuit : null;
+  const brainReason = brainInfo && brainInfo.triggered ? brainInfo.reason : null;
+
+  if(existing){
+    if(existing.status===null){
+      existing.suitKey = suitKey;
+      existing.side = side;
+      existing.modeTag = modeTag;
+      existing.baseSuit = brainBase;
+      existing.brainReason = brainReason;
+      saveHistory(list);
+      renderHistory();
+    }
+    return;
+  }
+
+  list.unshift({
+    id: Date.now() + '-' + Math.random().toString(36).slice(2,7),
+    gameNum, suitKey, side, modeTag,
+    baseSuit: brainBase, brainReason,
+    status: null, // null=en attente | 'valid' | 'invalid'
+    ts: new Date().toISOString()
+  });
+  saveHistory(list);
+  renderHistory();
+}
+
+function setHistoryStatus(id, status){
+  const list = loadHistory();
+  const entry = list.find(e=>e.id===id);
+  if(!entry) return;
+  entry.status = (entry.status === status) ? null : status; // re-cliquer annule
+  saveHistory(list);
+  renderHistory();
+}
+
+function clearHistory(){
+  if(!confirm('Effacer tout l\'historique des prédictions ?')) return;
+  saveHistory([]);
+  renderHistory();
+}
+
+// ── Résout automatiquement la prédiction en attente pour ce numéro de jeu ──
+// en comparant la couleur prédite aux cartes réellement sorties dans la bonne
+// parenthèse : 1ère (Joueur/P1) ou 2ème (Banquier/P2) selon l'attribution faite.
+function resolvePendingHistory(gameNum, p1Cards, p2Cards){
+  const list = loadHistory();
+  const entry = list.find(e=>e.gameNum===gameNum && e.status===null);
+  if(!entry) return null;
+  const cards = entry.side==='P2' ? p2Cards : p1Cards;
+  if(!cards || !cards.length) return null;
+  const actualSuits = new Set(cards.map(c=>c.suit));
+  entry.status = actualSuits.has(entry.suitKey) ? 'valid' : 'invalid';
+  entry.autoResolved = true;
+  entry.actualSuits = [...actualSuits];
+  saveHistory(list);
+  renderHistory();
+  return entry;
+}
+
+function showAutoValidationFeedback(entry){
+  const box = document.getElementById('history-autoval');
+  if(!box) return;
+  if(!entry){ box.textContent=''; box.style.display='none'; return; }
+  const ok = entry.status==='valid';
+  const sideLabel = entry.side==='P2' ? '2ème parenthèse (Banquier/P2)' : '1ère parenthèse (Joueur/P1)';
+  box.textContent = ok
+    ? `✓ Auto-validé : #N${entry.gameNum} ${SUIT_EMOJI[entry.suitKey]} ${entry.side} trouvée dans la ${sideLabel} — prédiction réussie.`
+    : `✕ Auto-validé : #N${entry.gameNum} ${SUIT_EMOJI[entry.suitKey]} ${entry.side} absente de la ${sideLabel} — prédiction échouée.`;
+  box.className = 'history-autoval show ' + (ok ? 'ok' : 'ko');
+  box.style.display = 'block';
+  setTimeout(()=>{ box.style.display='none'; }, 8000);
+}
+
+// ── CERVEAU INTELLIGENT ──
+// Analyse les 10 dernières prédictions résolues (auto ou manuel) et décide
+// si la couleur candidate doit être remplacée par une couleur plus fiable en ce moment.
+function computeBrainDecision(candidateSuit){
+  const SUITS = ['♠️','♥️','♦️','♣️'];
+  const recent = loadHistory().filter(e=>e.status!==null).slice(0,10); // plus récent en premier
+
+  const perSuit = {};
+  SUITS.forEach(s=>perSuit[s]={total:0,valid:0});
+  recent.forEach(e=>{
+    if(!perSuit[e.suitKey]) return;
+    perSuit[e.suitKey].total++;
+    if(e.status==='valid') perSuit[e.suitKey].valid++;
+  });
+
+  // Échecs consécutifs sur la couleur candidate (dans l'ordre du plus récent au plus ancien)
+  let consecutiveMisses = 0;
+  for(const e of recent){
+    if(e.suitKey !== candidateSuit) continue;
+    if(e.status==='invalid'){ consecutiveMisses++; } else { break; }
+  }
+
+  const candStats = perSuit[candidateSuit] || {total:0,valid:0};
+  const candRate  = candStats.total>0 ? candStats.valid/candStats.total : null;
+
+  const triggerConsecutive = consecutiveMisses >= 3;
+  const triggerRate = (candStats.total >= 3 && candRate !== null && candRate < 0.30);
+
+  if(!triggerConsecutive && !triggerRate){
+    return {triggered:false, perSuit, consecutiveMisses, candRate};
+  }
+
+  // Cherche la meilleure couleur alternative (taux de réussite récent le plus élevé, échantillon suffisant)
+  let best = null;
+  SUITS.forEach(s=>{
+    if(s===candidateSuit) return;
+    const st = perSuit[s];
+    if(st.total < 2) return; // échantillon trop faible pour être fiable
+    const rate = st.valid/st.total;
+    if(!best || rate > best.rate || (rate===best.rate && st.total>best.total)){
+      best = {suit:s, rate, total:st.total};
+    }
+  });
+
+  if(!best){
+    return {triggered:false, perSuit, consecutiveMisses, candRate, reason:'Dérive détectée mais pas assez de données sur les autres couleurs pour basculer en sécurité.'};
+  }
+
+  const reasonParts = [];
+  if(triggerConsecutive) reasonParts.push(`${consecutiveMisses} échecs d'affilée sur ${SUIT_EMOJI[candidateSuit]}`);
+  if(triggerRate) reasonParts.push(`taux ${Math.round(candRate*100)}% sur ${candStats.total} derniers ${SUIT_EMOJI[candidateSuit]}`);
+
+  return {
+    triggered:true,
+    overrideSuit: best.suit,
+    overrideRate: best.rate,
+    overrideSample: best.total,
+    reason: reasonParts.join(' + '),
+    perSuit, consecutiveMisses, candRate
+  };
+}
+
+function renderHistory(){
+  const list = loadHistory();
+  const listBox = document.getElementById('history-list');
+  const statsBox = document.getElementById('history-stats');
+  if(!listBox || !statsBox) return;
+
+  const total = list.length;
+  const valid = list.filter(e=>e.status==='valid').length;
+  const invalid = list.filter(e=>e.status==='invalid').length;
+  const pending = total - valid - invalid;
+  const rate = (valid+invalid)>0 ? Math.round(valid/(valid+invalid)*100) : null;
+
+  statsBox.innerHTML = total===0 ? '' : `
+    <span>Total : <b>${total}</b></span>
+    <span class="stat-ok">Validées : <b>${valid}</b></span>
+    <span class="stat-ko">Ratées : <b>${invalid}</b></span>
+    <span>En attente : <b>${pending}</b></span>
+    ${rate!==null ? `<span>Taux de réussite : <b>${rate}%</b></span>` : ''}
+  `;
+
+  if(total===0){
+    listBox.innerHTML = '<div class="history-empty">Aucune prédiction enregistrée pour le moment.</div>';
+    return;
+  }
+
+  listBox.innerHTML = list.map(e=>{
+    const statusClass = e.status==='valid' ? 'status-valid' : (e.status==='invalid' ? 'status-invalid' : '');
+    const emoji = SUIT_EMOJI[e.suitKey] || '';
+    const red = isRed(e.suitKey);
+    return `
+    <div class="history-item ${statusClass}">
+      <span class="hist-num">#N${e.gameNum}</span>
+      <span class="hist-suit" style="color:${red?'#cc4444':'var(--ivory)'}">${emoji}</span>
+      <span class="hist-label">${e.side}${e.baseSuit?` <span class="hist-tag hist-brain">🧠</span>`:''}${e.autoResolved?` <span class="hist-tag">auto</span>`:''}</span>
+      <div class="hist-actions">
+        <button class="hist-btn valid-btn ${e.status==='valid'?'active':''}" title="Validée chez le joueur" onclick="setHistoryStatus('${e.id}','valid')">✓</button>
+        <button class="hist-btn invalid-btn ${e.status==='invalid'?'active':''}" title="Non passée" onclick="setHistoryStatus('${e.id}','invalid')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 // ══════════════════════════════════════════════════════
 //  CONSTANTES
@@ -361,6 +671,28 @@ let lastCalcResult   = null;
 const SUIT_EMOJI = {'♠️':'♠️','♥️':'♥️','♦️':'♦️','♣️':'♣️'};
 const SUIT_NAMES = {'♠️':'PIQUE','♥️':'COEUR','♦️':'CARREAU','♣️':'TRÈFLE'};
 function isRed(s){ return s==='♥️'||s==='♦️'; }
+
+// ── Attribution P1 (Joueur) / P2 (Banquier) selon les 2 derniers chiffres du n° de jeu ──
+// ── ALGORITHME 2 : inversion automatique pour les n° de jeu 900 à 1441 ──
+// ♣️↔♥️ et ♠️↔♦️
+const RANGE_INV_MAP = {'♣️':'♥️','♥️':'♣️','♠️':'♦️','♦️':'♠️'};
+function applyRangeInverse(suit, nextNum){
+  const inRange = (nextNum >= 900 && nextNum <= 1441);
+  if(!inRange) return {applied:false, before:suit, after:suit};
+  const after = RANGE_INV_MAP[suit] || suit;
+  return {applied:true, before:suit, after};
+}
+
+function computeSide(avantDernier, dernierDigit){
+  const avantImpair = (avantDernier % 2 !== 0);
+  const dernierBas  = (dernierDigit >= 1 && dernierDigit <= 5); // 1 à 5
+  // dernierDigit 0,6,7,8,9 = "haut" (6 à 0)
+  if(avantImpair){
+    return dernierBas ? 'P1' : 'P2';
+  } else {
+    return dernierBas ? 'P2' : 'P1';
+  }
+}
 
 // ══════════════════════════════════════════════════════
 //  AUTO MILIEU → décide si ALL INVERSE doit être ON/OFF
@@ -464,6 +796,15 @@ function updateAllInverseUI(){
   const status = document.getElementById('allinv-status');
   btn.classList.toggle('active', allInverseActive);
   status.textContent = allInverseActive ? 'ON' : 'OFF';
+}
+
+function toggleBrain(){
+  brainActive = !brainActive;
+  const btn    = document.getElementById('btn-brain');
+  const status = document.getElementById('brain-status');
+  btn.classList.toggle('active', brainActive);
+  status.textContent = brainActive ? 'ON' : 'OFF';
+  if(lastCalcResult) renderResult(lastCalcResult);
 }
 
 // ══════════════════════════════════════════════════════
@@ -806,7 +1147,7 @@ function runCalc(raw){
     milieuRule.autoResult = autoResult;
   }
 
-  return {num,nextNum,nextH,nextM,avantDernier,dernierDigit,sel,algoUsed,algoResult,finalInv,finalSuit,hyperGlobal,milieuRule};
+  return {num,p1,p2,nextNum,nextH,nextM,avantDernier,dernierDigit,sel,algoUsed,algoResult,finalInv,finalSuit,hyperGlobal,milieuRule};
 }
 
 // ══════════════════════════════════════════════════════
@@ -825,6 +1166,10 @@ function calculate(){
     try{
       const r=runCalc(raw);
       lastCalcResult=r;
+
+      // ── Auto-validation de la prédiction précédente en attente ──
+      const autoVal = resolvePendingHistory(r.num, r.p1, r.p2);
+      showAutoValidationFeedback(autoVal);
 
       // ── AUTO MILIEU : pilote le bouton ALL INVERSE ──
       // Réinitialise le flag manuel à chaque nouveau calcul
@@ -850,19 +1195,37 @@ function calculate(){
 function renderResult(r){
   const ar=r.algoResult;
 
-  // ── Calcul ALL INVERSE (post-prédiction, si actif) ──
+  // ── ALGORITHME 2 : inversion automatique pour n° de jeu 900-1441 ──
   let displaySuit = r.finalSuit;
+  const rangeInvInfo = applyRangeInverse(displaySuit, r.nextNum);
+  if(rangeInvInfo.applied) displaySuit = rangeInvInfo.after;
+
+  // ── Calcul ALL INVERSE (post-prédiction, si actif) ──
   let allInvInfo  = null;
   if(allInverseActive){
-    allInvInfo = applyAllInverse(r.finalSuit, r.avantDernier, r.nextH);
+    allInvInfo = applyAllInverse(displaySuit, r.avantDernier, r.nextH);
     displaySuit = allInvInfo.result;
   }
+
+  // ── CERVEAU INTELLIGENT (dernière couche, après tout le reste) ──
+  let brainInfo = {triggered:false};
+  if(brainActive){
+    brainInfo = computeBrainDecision(displaySuit);
+    if(brainInfo.triggered){
+      brainInfo.baseSuit = displaySuit;
+      displaySuit = brainInfo.overrideSuit;
+    }
+  }
+
+  const side = computeSide(r.avantDernier, r.dernierDigit);
 
   document.getElementById('res-num').textContent=`#N${r.nextNum}`;
   const red=isRed(displaySuit);
   document.getElementById('res-suit-emoji').innerHTML=
     `<span style="color:${red?'#cc4444':'var(--ivory)'}">${SUIT_EMOJI[displaySuit]||displaySuit}</span>`;
-  document.getElementById('res-suit-label').textContent=SUIT_NAMES[displaySuit]||displaySuit;
+  document.getElementById('res-side').innerHTML=`<span class="side-tag">${side}</span>`;
+
+  upsertHistoryEntry(r.nextNum, displaySuit, side, '', brainInfo);
 
   // Banner ALL INVERSE
   const banner = document.getElementById('allinv-banner');
@@ -889,6 +1252,8 @@ function renderResult(r){
   }
 
   const badges=[
+    `<div class="badge badge-range2">${rangeInvInfo.applied?'🔀':'⬛'} ALGO 2 (900-1441) — #N${r.nextNum} ${rangeInvInfo.applied?`DANS LA PLAGE → INVERSION ${SUIT_EMOJI[rangeInvInfo.before]} → ${SUIT_EMOJI[rangeInvInfo.after]}`:'HORS PLAGE — INACTIF'}</div>`,
+    `<div class="badge badge-side">${side==='P1'?'👤':'🏦'} ATTRIBUTION — Av-dern=${r.avantDernier}(${r.avantDernier%2!==0?'IMPAIR':'PAIR'}) · Dernier=${r.dernierDigit}(${(r.dernierDigit>=1&&r.dernierDigit<=5)?'1-5':'6-0'}) → ${side==='P1'?'P1 (JOUEUR)':'P2 (BANQUIER)'}</div>`,
     `<div class="badge badge-selector">🎯 SÉLECTEUR — ${selectorLine}</div>`,
     `<div class="badge badge-algo">⚙ ALGO ${r.algoUsed} — BASE : ALGO ${ar.baseAlgo} · ${fibOverrideLabel} → ALGO FINAL : ALGO ${ar.algo}</div>`,
     `<div class="badge badge-parity">◈ PARITÉ — ALGO ${algoParity} · #N${r.nextNum} RÉDUIT = ${ar.reduceSteps.join(' → ')} → ${numParity}</div>`,
@@ -910,7 +1275,13 @@ function renderResult(r){
     // Badge ALL INVERSE — toujours présent
     allInverseActive && allInvInfo
       ? `<div class="badge badge-allinv">⟲ ALL INVERSE ON — ${allInvInfo.label} — RÉSULTAT : ${SUIT_EMOJI[allInvInfo.before]} → ${SUIT_EMOJI[allInvInfo.result]}</div>`
-      : `<div class="badge badge-allinv" style="opacity:.3">⟲ ALL INVERSE OFF — INACTIF</div>`
+      : `<div class="badge badge-allinv" style="opacity:.3">⟲ ALL INVERSE OFF — INACTIF</div>`,
+    // Badge CERVEAU INTELLIGENT
+    brainActive
+      ? (brainInfo.triggered
+          ? `<div class="badge badge-brain">🧠 CERVEAU INTELLIGENT — ${brainInfo.reason} → BASCULE ${SUIT_EMOJI[brainInfo.baseSuit]} → ${SUIT_EMOJI[brainInfo.overrideSuit]} (taux récent ${Math.round(brainInfo.overrideRate*100)}% sur ${brainInfo.overrideSample})</div>`
+          : `<div class="badge badge-brain" style="opacity:.45">🧠 CERVEAU INTELLIGENT — aucune dérive détectée, prédiction conservée</div>`)
+      : `<div class="badge badge-brain" style="opacity:.3">🧠 CERVEAU INTELLIGENT OFF — INACTIF</div>`
   ];
   document.getElementById('badge-zone').innerHTML=badges.join('');
 
@@ -1016,10 +1387,9 @@ ${r.milieuRule.active?`<div class="det-row"><span class="det-label" style="color
 
 function copyPrediction(){
   const num=document.getElementById('res-num').textContent;
-  const suit=document.getElementById('res-suit-label').textContent;
-  const emoji=Object.entries(SUIT_NAMES).find(([,v])=>v===suit)?.[0]||'';
-  const modeTag=allInverseActive?' [ALL INVERSE]':'';
-  navigator.clipboard.writeText(`${num} ${emoji} ${suit}${modeTag}`).then(()=>{
+  const side=document.getElementById('res-side').textContent;
+  const emoji=document.getElementById('res-suit-emoji').textContent;
+  navigator.clipboard.writeText(`${num}${emoji}${side}`).then(()=>{
     const btn=document.getElementById('btn-copy');
     btn.textContent='✓ COPIÉ';btn.classList.add('copied');
     setTimeout(()=>{btn.textContent='⧉ COPIER LA PRÉDICTION';btn.classList.remove('copied');},1800);
@@ -1061,7 +1431,9 @@ async function fetchLatestTelegramGame(silent=false){
     const isNew = liveLastMessageId !== data.message_id;
     liveLastMessageId = data.message_id;
     setLiveStatus(`Canal synchronisé · ${isNew ? 'nouveau jeu détecté' : 'dernier jeu confirmé'} · #N${data.game_number}`);
-    calculate();
+    if(isNew || !silent){
+      calculate();
+    }
   }catch(err){
     setLiveStatus(`Erreur de synchronisation Telegram : ${err.message}`);
   }finally{
@@ -1086,6 +1458,7 @@ function toggleLiveAutoRefresh(){
 
 window.addEventListener('load', ()=>{
   fetchLatestTelegramGame(true);
+  renderHistory();
 });
 
 </script>
