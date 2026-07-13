@@ -143,8 +143,8 @@
   }
   @keyframes pulse-glow{0%,100%{filter:drop-shadow(0 0 20px #c9a84c55)}50%{filter:drop-shadow(0 0 40px #c9a84caa)}}
   .prediction-suit-label{
-    text-align:center;font-family:'Cinzel',serif;font-size:clamp(1.2rem,5vw,1.6rem);font-weight:900;
-    color:var(--gold);letter-spacing:.1em;margin-bottom:12px;
+    text-align:center;font-family:'Cinzel',serif;font-size:clamp(1.8rem,8vw,3rem);font-weight:900;
+    color:var(--gold);letter-spacing:.15em;margin-bottom:12px;
   }
 
   /* Badge ALL INVERSE actif sous la prédiction */
@@ -198,6 +198,7 @@
   .badge-hyper{background:linear-gradient(135deg,#1a001a,#2d002d);border:1px solid #aa00aa;border-left:3px solid #ff44ff;color:#ffaaff;animation:flicker-hyper 3s ease-in-out infinite;font-weight:700;}
   @keyframes flicker-hyper{0%,100%{box-shadow:0 0 10px #ff44ff55}50%{box-shadow:0 0 24px #ff44ffaa}}
   .badge-finalinv{background:linear-gradient(135deg,#1a0a1a,#2a0f2a);border:1px solid #8b2a8b;border-left:3px solid #dd44dd;color:#ff99ff;animation:flicker-pink 3s ease-in-out infinite;}
+  @keyframes flicker-pink{0%,100%{box-shadow:0 0 8px #dd44dd44}50%{box-shadow:0 0 18px #dd44dd88}}
 
   /* Badge ALL INVERSE dans la liste */
   .badge-allinv{
@@ -351,7 +352,7 @@
 //  ÉTAT GLOBAL
 // ══════════════════════════════════════════════════════
 let allInverseActive = false;
-let allInverseManual = false;
+let allInverseManual = false;  // true = toggled manually, false = driven by auto-milieu
 let lastCalcResult   = null;
 
 // ══════════════════════════════════════════════════════
@@ -362,36 +363,24 @@ const SUIT_NAMES = {'♠️':'PIQUE','♥️':'COEUR','♦️':'CARREAU','♣️
 function isRed(s){ return s==='♥️'||s==='♦️'; }
 
 // ══════════════════════════════════════════════════════
-//  NOUVELLE FONCTION : Attribution P1 / P2
-// ══════════════════════════════════════════════════════
-function getPAssignment(nextNum){
-  const numStr = String(nextNum).padStart(2, '0');
-  const len = numStr.length;
-  const avantDernier = parseInt(numStr[len-2], 10);
-  const dernier = parseInt(numStr[len-1], 10);
-
-  let p = 'P1';
-
-  if (avantDernier % 2 === 1) { // impair
-    p = (dernier >= 1 && dernier <= 5) ? 'P1' : 'P2';
-  } else { // pair
-    p = (dernier >= 1 && dernier <= 5) ? 'P2' : 'P1';
-  }
-
-  // Inversion supplémentaire pour numéros 1000-1441 (4 chiffres)
-  if (nextNum >= 1000 && nextNum <= 1441 && len >= 4) {
-    const d2 = parseInt(numStr[1], 10);
-    const d3 = parseInt(numStr[2], 10);
-    if ((d2 % 2 === 1) && (d3 % 2 === 1)) {
-      p = (p === 'P1') ? 'P2' : 'P1';
-    }
-  }
-
-  return p;
-}
-
-// ══════════════════════════════════════════════════════
-//  AUTO MILIEU (conservé)
+//  AUTO MILIEU → décide si ALL INVERSE doit être ON/OFF
+//
+//  Deux branches selon la parité du 1er chiffre du N° prédit :
+//
+//  ── 1er chiffre PAIR ──
+//    MILIEU PAIR   + Min 1-5  → OFF (no inversion)
+//    MILIEU PAIR   + Min 6-0  → ON  (inversion)
+//    MILIEU IMPAIR + Min 1-5  → ON  (inversion)
+//    MILIEU IMPAIR + Min 6-0  → OFF (no inversion)
+//
+//  ── 1er chiffre IMPAIR ──
+//    MILIEU PAIR   + Min 1-5  → ON  (inversion)
+//    MILIEU PAIR   + Min 6-0  → OFF (no inversion)
+//    MILIEU IMPAIR + Min 1-5  → OFF (no inversion)
+//    MILIEU IMPAIR + Min 6-0  → ON  (inversion)
+//
+//  "Min" = unité des minutes (nextM % 10)
+//  "6-0" = tout ce qui n'est PAS 1-5 (0,6,7,8,9)
 // ══════════════════════════════════════════════════════
 function autoMilieuInverse(milieuDigit, nextM, firstDigit){
   const milieuPair    = [0,2,4,6,8].includes(milieuDigit);
@@ -405,16 +394,18 @@ function autoMilieuInverse(milieuDigit, nextM, firstDigit){
   const minLabel    = min1to5 ? `MIN_UNITÉ=${minUnit}(1-5)` : `MIN_UNITÉ=${minUnit}(6-0)`;
 
   if(firstDigitPair){
+    // Branche 1er chiffre PAIR : logique INVERSÉE par rapport à branche impaire
     if(milieuPair){
-      shouldBeOn = !min1to5;
+      shouldBeOn = !min1to5;  // PAIR+1-5→OFF / PAIR+6-0→ON
     } else {
-      shouldBeOn = min1to5;
+      shouldBeOn = min1to5;   // IMPAIR+1-5→ON / IMPAIR+6-0→OFF
     }
   } else {
+    // Branche 1er chiffre IMPAIR : logique d'origine
     if(milieuPair){
-      shouldBeOn = min1to5;
+      shouldBeOn = min1to5;   // PAIR+1-5→ON / PAIR+6-0→OFF
     } else {
-      shouldBeOn = !min1to5;
+      shouldBeOn = !min1to5;  // IMPAIR+1-5→OFF / IMPAIR+6-0→ON
     }
   }
 
@@ -423,7 +414,7 @@ function autoMilieuInverse(milieuDigit, nextM, firstDigit){
 }
 
 // ══════════════════════════════════════════════════════
-//  ALL INVERSE — logique post-prédiction (conservé)
+//  ALL INVERSE — logique post-prédiction
 // ══════════════════════════════════════════════════════
 function applyAllInverse(suit, avantDernier, nextH){
   const isPair    = (avantDernier % 2 === 0);
@@ -453,10 +444,10 @@ function applyAllInverse(suit, avantDernier, nextH){
 }
 
 // ══════════════════════════════════════════════════════
-//  TOGGLE ALL INVERSE BUTTON
+//  TOGGLE ALL INVERSE BUTTON (manuel)
 // ══════════════════════════════════════════════════════
 function toggleAllInverse(){
-  allInverseManual = true;
+  allInverseManual = true;  // marquer comme choix manuel
   allInverseActive = !allInverseActive;
   updateAllInverseUI();
   if(lastCalcResult) renderResult(lastCalcResult);
@@ -492,9 +483,8 @@ function cardValue(v){
   const n=parseInt(v,10);
   return isNaN(n)?null:n;
 }
-
 function parseGame(raw){
-  let s = raw.trim().replace(/[⏰▶]/g, '').trim(); // Nettoyage des symboles ⏰ et ▶
+  const s=raw.trim();
   const numMatch=s.match(/#N(\d+)/i);
   if(!numMatch) throw new Error("Numéro de jeu introuvable. Format: #N1283");
   const num=parseInt(numMatch[1],10);
@@ -515,7 +505,6 @@ function parseGame(raw){
   }
   return {num,p1,p2};
 }
-
 function numToTime(n){
   const total=n-1;
   const h=Math.floor(total/60)%24;
@@ -540,7 +529,7 @@ function signHM(h,m){
 }
 
 // ══════════════════════════════════════════════════════
-//  SÉLECTEUR V4 / V5+ (conservé)
+//  SÉLECTEUR V4 / V5+
 // ══════════════════════════════════════════════════════
 function selectSystem(nextH, nextM, nextNum){
   const hPair = (nextH % 2 === 0);
@@ -599,7 +588,6 @@ function selectSystem(nextH, nextM, nextNum){
   }
   return {algo:'V4', invKey:'CD_SH', invLabel:'V4+ ♣↔♦ / ♠↔♥'};
 }
-
 function applyFinalInv(suit, invKey, lastDigit){
   const CD_SH = {'♣️':'♦️','♦️':'♣️','♠️':'♥️','♥️':'♠️'};
   const CH_SD = {'♣️':'♥️','♥️':'♣️','♠️':'♦️','♦️':'♠️'};
@@ -621,7 +609,7 @@ function applyFinalInv(suit, invKey, lastDigit){
 }
 
 // ══════════════════════════════════════════════════════
-//  ALGO V4 (conservé)
+//  ALGO V4
 // ══════════════════════════════════════════════════════
 function runV4(num, p1Cards, p2Cards, nextNum){
   const isReduced=String(num).length>=4;
@@ -673,7 +661,7 @@ function runV4(num, p1Cards, p2Cards, nextNum){
 }
 
 // ══════════════════════════════════════════════════════
-//  ALGO V5+ (conservé)
+//  ALGO V5+
 // ══════════════════════════════════════════════════════
 function trancheTransform(suit,gameNum){
   const ti=Math.floor((gameNum-1)/5);
@@ -750,7 +738,7 @@ function runV5(num, p1Cards, p2Cards, nextNum){
 }
 
 // ══════════════════════════════════════════════════════
-//  CALCUL PRINCIPAL COMBO (adapté avec inversions 900-1441 + P1/P2)
+//  CALCUL PRINCIPAL COMBO
 // ══════════════════════════════════════════════════════
 function runCalc(raw){
   const {num,p1,p2}=parseGame(raw);
@@ -808,27 +796,21 @@ function runCalc(raw){
       milieuRule={active:false,milieuDigit,before:finalSuit,result:finalSuit,label:`MILIEU=${milieuDigit}(IMPAIR) → INACTIF`};
     }
 
+    // AUTO MILIEU → pilote le bouton ALL INVERSE
+    // On applique la règle auto seulement si l'utilisateur n'a pas fait de toggle manuel
+    // pour CE calcul. On recalcule à chaque runCalc (reset manuel à chaque nouveau jeu).
     const milieuDigitForAuto = parseInt(String(nextNum)[1], 10);
     const firstDigitForAuto  = parseInt(String(nextNum)[0], 10);
     const autoResult = autoMilieuInverse(milieuDigitForAuto, nextM, firstDigitForAuto);
+    // On stocke dans le résultat pour affichage
     milieuRule.autoResult = autoResult;
   }
 
-  // ─── NOUVELLE RÈGLE : Inversion couleurs 900 à 1441 ───
-  let finalDisplaySuit = finalSuit;
-  if(nextNum >= 900 && nextNum <= 1441){
-    const swap = {'♣️':'♥️','♥️':'♣️','♠️':'♦️','♦️':'♠️'};
-    finalDisplaySuit = swap[finalSuit] || finalSuit;
-  }
-
-  // ─── Attribution P1 / P2 ───
-  const pLabel = getPAssignment(nextNum);
-
-  return {num,nextNum,nextH,nextM,avantDernier,dernierDigit,sel,algoUsed,algoResult,finalInv,finalSuit,hyperGlobal,milieuRule, finalDisplaySuit, pLabel};
+  return {num,nextNum,nextH,nextM,avantDernier,dernierDigit,sel,algoUsed,algoResult,finalInv,finalSuit,hyperGlobal,milieuRule};
 }
 
 // ══════════════════════════════════════════════════════
-//  UI (adapté pour format court)
+//  UI
 // ══════════════════════════════════════════════════════
 function showError(msg){const b=document.getElementById('error-box');b.textContent='⚠ '+msg;b.style.display='block';}
 function hideError(){document.getElementById('error-box').style.display='none';}
@@ -844,6 +826,8 @@ function calculate(){
       const r=runCalc(raw);
       lastCalcResult=r;
 
+      // ── AUTO MILIEU : pilote le bouton ALL INVERSE ──
+      // Réinitialise le flag manuel à chaque nouveau calcul
       allInverseManual = false;
       const autoBadge = document.getElementById('auto-mode-badge');
       if(r.milieuRule && r.milieuRule.autoResult){
@@ -852,6 +836,7 @@ function calculate(){
         autoBadge.textContent = `⟳ AUTO — ${ar.autoReason}`;
         autoBadge.className = `auto-mode-badge show ${ar.shouldBeOn ? 'auto-on' : 'auto-off'}`;
       } else {
+        // Pas de milieu (N° pas à 3 chiffres) → laisser le bouton en état actuel
         autoBadge.className = 'auto-mode-badge';
       }
 
@@ -865,33 +850,29 @@ function calculate(){
 function renderResult(r){
   const ar=r.algoResult;
 
-  let displaySuit = r.finalDisplaySuit || r.finalSuit;
+  // ── Calcul ALL INVERSE (post-prédiction, si actif) ──
+  let displaySuit = r.finalSuit;
   let allInvInfo  = null;
   if(allInverseActive){
-    allInvInfo = applyAllInverse(displaySuit, r.avantDernier, r.nextH);
+    allInvInfo = applyAllInverse(r.finalSuit, r.avantDernier, r.nextH);
     displaySuit = allInvInfo.result;
   }
-
-  const pLabel = r.pLabel || getPAssignment(r.nextNum);
 
   document.getElementById('res-num').textContent=`#N${r.nextNum}`;
   const red=isRed(displaySuit);
   document.getElementById('res-suit-emoji').innerHTML=
     `<span style="color:${red?'#cc4444':'var(--ivory)'}">${SUIT_EMOJI[displaySuit]||displaySuit}</span>`;
+  document.getElementById('res-suit-label').textContent=SUIT_NAMES[displaySuit]||displaySuit;
 
-  // Format court demandé : #Nxxx♠️P2
-  document.getElementById('res-suit-label').textContent = `#N${r.nextNum}${displaySuit}${pLabel}`;
-
-  // Banner ALL INVERSE (conservé mais discret)
+  // Banner ALL INVERSE
   const banner = document.getElementById('allinv-banner');
   if(allInverseActive && allInvInfo){
-    banner.textContent = `⟲ ALL INVERSE — ${allInvInfo.label}`;
+    banner.textContent = `⟲ MODE INVERSÉE ACTIF — ${allInvInfo.label} — ${SUIT_EMOJI[allInvInfo.before]} → ${SUIT_EMOJI[allInvInfo.result]}`;
     banner.classList.add('show');
   } else {
     banner.classList.remove('show');
   }
 
-  // Badges (conservés pour analyse)
   const hParite=r.nextH%2===0?'PAIR':'IMPAIR';
   const avantDernierParite=r.avantDernier%2===0?'PAIR':'IMPAIR';
   const minTranche=r.nextM<=11?'00-11':'12-59';
@@ -900,6 +881,7 @@ function renderResult(r){
   const algoParity=ar.algoEven?`${ar.algo} (PAIR)`:`${ar.algo} (IMPAIR)`;
   const numParity=ar.numEven?`${ar.reducedDigit} (PAIR)`:`${ar.reducedDigit} (IMPAIR)`;
 
+  // Badge AUTO MILIEU
   let autoMilieuBadge = '';
   if(r.milieuRule && r.milieuRule.autoResult){
     const am = r.milieuRule.autoResult;
@@ -914,23 +896,25 @@ function renderResult(r){
     ...(ar.postInvActive?[`<div class="badge badge-postinv">🔄 POST-INV — ${ar.postInvReason}</div>`]:[]),
     ...(ar.trancheInfo?[`<div class="badge badge-tranche">♣ TRANCHE/5 — ${ar.trancheInfo.ruleLabel}</div>`]:[]),
     ...(ar.reinvInfo&&ar.reinvInfo.applied?[`<div class="badge badge-reinv">🔁 REINVERSION — ${ar.reinvInfo.rule}</div>`]:[]),
-    `<div class="badge badge-finalinv">✦ INV FINALE ${r.sel.invLabel}</div>`,
+    `<div class="badge badge-finalinv">✦ INV FINALE ${r.sel.invLabel} — ${r.finalInv.detail}</div>`,
     ...(r.hyperGlobal ? (r.hyperGlobal.active
-      ? [`<div class="badge badge-hyper">⚡⚡ INV HYPER GLOBAL (3 chiffres) — MIN 1er chiffre=${r.hyperGlobal.minFirstDigit}(IMPAIR) · ${r.hyperGlobal.hgLabel}</div>`]
+      ? [`<div class="badge badge-hyper">⚡⚡ INV HYPER GLOBAL (3 chiffres) — MIN 1er chiffre=${r.hyperGlobal.minFirstDigit}(IMPAIR) · ${r.hyperGlobal.hgLabel} → ${SUIT_EMOJI[r.hyperGlobal.before]}→${SUIT_EMOJI[r.hyperGlobal.result]}</div>`]
       : [`<div class="badge badge-hyper" style="opacity:.45">⚡⚡ HYPER GLOBAL (3 chiffres) — MIN 1er chiffre=${r.hyperGlobal.minFirstDigit}(PAIR) → INACTIF</div>`]
     ) : []),
     ...(r.milieuRule ? (r.milieuRule.active
-      ? [`<div class="badge badge-milieu">◉ MILIEU PAIR (3 chiffres) — ${r.milieuRule.label}</div>`]
+      ? [`<div class="badge badge-milieu">◉ MILIEU PAIR (3 chiffres) — ${r.milieuRule.label} → ${SUIT_EMOJI[r.milieuRule.before]}→${SUIT_EMOJI[r.milieuRule.result]}</div>`]
       : [`<div class="badge badge-milieu" style="opacity:.45">◉ MILIEU (3 chiffres) — ${r.milieuRule.label}</div>`]
     ) : []),
+    // Badge AUTO MILIEU → ALL INVERSE
     autoMilieuBadge,
+    // Badge ALL INVERSE — toujours présent
     allInverseActive && allInvInfo
-      ? `<div class="badge badge-allinv">⟲ ALL INVERSE ON</div>`
-      : `<div class="badge badge-allinv" style="opacity:.3">⟲ ALL INVERSE OFF</div>`
+      ? `<div class="badge badge-allinv">⟲ ALL INVERSE ON — ${allInvInfo.label} — RÉSULTAT : ${SUIT_EMOJI[allInvInfo.before]} → ${SUIT_EMOJI[allInvInfo.result]}</div>`
+      : `<div class="badge badge-allinv" style="opacity:.3">⟲ ALL INVERSE OFF — INACTIF</div>`
   ];
   document.getElementById('badge-zone').innerHTML=badges.join('');
 
-  // Détails conservés
+  // Détails
   const p1c=isRed(ar.p1First.suit)?'+':'-';
   const p2c=isRed(ar.p2First.suit)?'+':'-';
   const fibModLabels=['ALGO NORMAL CONSERVÉ','FORCER ALGO 1','FORCER ALGO 2','INVERSER ALGO'];
@@ -942,6 +926,7 @@ function renderResult(r){
 <div class="det-row"><span class="det-label">Dernier chiffre #N${r.nextNum}</span><span class="det-val hi-green">${r.dernierDigit}</span></div>
 <hr class="det-sep">
 <div class="det-row"><span class="det-label" style="color:#80e080">🎯 ALGO SÉLECTIONNÉ</span><span class="det-val hi-green">${r.algoUsed}</span></div>
+<div class="det-row"><span class="det-label" style="color:#80e080">INV FINALE PRÉVUE</span><span class="det-val hi-green">${r.sel.invLabel}</span></div>
 <hr class="det-sep">
 <div class="det-row"><span class="det-label">Signe H&M (${ar.time})</span><span class="det-val hi">${ar.sHM}</span></div>
 <div class="det-row"><span class="det-label">P1 — ${ar.p1First.val}${SUIT_EMOJI[ar.p1First.suit]} couleur</span><span class="det-val">${p1c}</span></div>
@@ -960,34 +945,65 @@ function renderResult(r){
 
   if(ar.postInvActive){
     detailsHTML+=`
-<div class="det-row"><span class="det-label" style="color:#e8a020">⚠ POST-INV</span><span class="det-val" style="color:#e8a020">${ar.postInvReason}</span></div>`;
+<div class="det-row"><span class="det-label" style="color:#e8a020">⚠ POST-INV</span><span class="det-val" style="color:#e8a020">${ar.postInvReason}</span></div>
+<div class="det-row"><span class="det-label" style="color:#e8a020">Après post-inv</span><span class="det-val" style="color:#e8a020">${SUIT_EMOJI[ar.transformed]} → ${SUIT_EMOJI[ar.postInvSuit||ar.transformed]}</span></div>`;
   }
   if(ar.trancheInfo){
-    detailsHTML+=`<div class="det-row"><span class="det-label" style="color:#4ecdc4">TRANCHE/5</span><span class="det-val hi-teal">${ar.trancheInfo.ruleLabel}</span></div>`;
+    detailsHTML+=`
+<hr class="det-sep">
+<div class="det-row"><span class="det-label" style="color:#4ecdc4">TRANCHE/5</span><span class="det-val hi-teal">${ar.trancheInfo.ruleLabel}</span></div>`;
   }
   if(ar.reinvInfo&&ar.reinvInfo.applied){
-    detailsHTML+=`<div class="det-row"><span class="det-label" style="color:#a0c8ff">REINVERSION</span><span class="det-val hi-violet">${ar.reinvInfo.rule}</span></div>`;
+    detailsHTML+=`
+<div class="det-row"><span class="det-label" style="color:#a0c8ff">REINVERSION</span><span class="det-val hi-violet">${ar.reinvInfo.rule}</span></div>`;
   }
 
   detailsHTML+=`
 <hr class="det-sep">
-<div class="det-row"><span class="det-label">Résultat brut</span><span class="det-val">${SUIT_EMOJI[ar.rawResult]}</span></div>`;
+<div class="det-row"><span class="det-label">Résultat brut (avant inv finale)</span><span class="det-val">${SUIT_EMOJI[ar.rawResult]}</span></div>
+<div class="det-row"><span class="det-label" style="color:#ff99ff">✦ INV FINALE — ${r.sel.invLabel}</span><span class="det-val hi-pink">${r.finalInv.detail}</span></div>`;
 
-  if(r.hyperGlobal && r.hyperGlobal.active){
-    detailsHTML+=`<div class="det-row"><span class="det-label" style="color:#ffaaff">HYPER GLOBAL</span><span class="det-val" style="color:#ffaaff">${r.hyperGlobal.hgLabel}</span></div>`;
+  if(r.hyperGlobal){
+    detailsHTML+=`
+<hr class="det-sep">
+<div class="det-row"><span class="det-label" style="color:#ffaaff">⚡⚡ HYPER GLOBAL (3 chiffres)</span><span class="det-val" style="color:#ffaaff">${r.hyperGlobal.active?'ACTIF':'INACTIF'}</span></div>
+<div class="det-row"><span class="det-label" style="color:#ffaaff">MIN 1er chiffre</span><span class="det-val" style="color:#ffaaff">${r.hyperGlobal.minFirstDigit} (${r.hyperGlobal.minFirstImp?'IMPAIR':'PAIR'})</span></div>
+${r.hyperGlobal.active?`<div class="det-row"><span class="det-label" style="color:#ffaaff">Règle</span><span class="det-val" style="color:#ffaaff">${r.hyperGlobal.hgLabel}</span></div>
+<div class="det-row"><span class="det-label" style="color:#ffaaff">Après HYPER GLOBAL</span><span class="det-val" style="color:#ffaaff">${SUIT_EMOJI[r.hyperGlobal.before]} → ${SUIT_EMOJI[r.hyperGlobal.result]}</span></div>`:''}`;
   }
-  if(r.milieuRule && r.milieuRule.active){
-    detailsHTML+=`<div class="det-row"><span class="det-label" style="color:#66eeff">MILIEU PAIR</span><span class="det-val" style="color:#66eeff">${r.milieuRule.label}</span></div>`;
+  if(r.milieuRule){
+    detailsHTML+=`
+<hr class="det-sep">
+<div class="det-row"><span class="det-label" style="color:#66eeff">◉ MILIEU (3 chiffres)</span><span class="det-val" style="color:#66eeff">${r.milieuRule.active?'ACTIF':'INACTIF'}</span></div>
+<div class="det-row"><span class="det-label" style="color:#66eeff">2ème chiffre N°${r.nextNum}</span><span class="det-val" style="color:#66eeff">${r.milieuRule.milieuDigit} (${r.milieuRule.active?'PAIR':'IMPAIR'})</span></div>
+${r.milieuRule.active?`<div class="det-row"><span class="det-label" style="color:#66eeff">Règle</span><span class="det-val" style="color:#66eeff">${r.milieuRule.label}</span></div>
+<div class="det-row"><span class="det-label" style="color:#66eeff">Après MILIEU PAIR</span><span class="det-val" style="color:#66eeff">${SUIT_EMOJI[r.milieuRule.before]} → ${SUIT_EMOJI[r.milieuRule.result]}</span></div>`:''}`;
+
+    if(r.milieuRule.autoResult){
+      const am = r.milieuRule.autoResult;
+      detailsHTML+=`
+<hr class="det-sep">
+<div class="det-row"><span class="det-label" style="color:#aad4ff">🔁 AUTO ALL INVERSE (MILIEU+MIN)</span><span class="det-val" style="color:#aad4ff">${am.shouldBeOn?'ON ✓':'OFF ✗'}</span></div>
+<div class="det-row"><span class="det-label" style="color:#aad4ff">1er chiffre N°${r.nextNum}</span><span class="det-val" style="color:#aad4ff">${am.firstDigit} (${am.firstDigitPair?'PAIR':'IMPAIR'})</span></div>
+<div class="det-row"><span class="det-label" style="color:#aad4ff">MILIEU</span><span class="det-val" style="color:#aad4ff">${am.milieuPair?'PAIR':'IMPAIR'}</span></div>
+<div class="det-row"><span class="det-label" style="color:#aad4ff">Unité de MIN (${r.nextM})</span><span class="det-val" style="color:#aad4ff">${am.minUnit} → ${am.min1to5?'1-5':'6-0'}</span></div>
+<div class="det-row"><span class="det-label" style="color:#aad4ff">Règle AUTO</span><span class="det-val" style="color:#aad4ff">${am.autoReason}</span></div>`;
+    }
   }
 
-  // Inversion 900-1441
-  if(r.nextNum >= 900 && r.nextNum <= 1441){
-    detailsHTML+=`<div class="det-row"><span class="det-label" style="color:#ff99ff">INV 900-1441 (♣↔♥ / ♠↔♦)</span><span class="det-val" style="color:#ff99ff">APPLIQUÉE</span></div>`;
+  // ALL INVERSE dans les détails
+  if(allInverseActive && allInvInfo){
+    detailsHTML+=`
+<hr class="det-sep">
+<div class="det-row"><span class="det-label" style="color:#ff88ff">⟲ ALL INVERSE (POST-PRÉDICTION)</span><span class="det-val" style="color:#ff88ff">ACTIF</span></div>
+<div class="det-row"><span class="det-label" style="color:#ff88ff">Avant-dernier chiffre</span><span class="det-val" style="color:#ff88ff">${r.avantDernier} (${allInvInfo.isPair?'PAIR':'IMPAIR'})</span></div>
+<div class="det-row"><span class="det-label" style="color:#ff88ff">Règle ALL INVERSE</span><span class="det-val" style="color:#ff88ff">${allInvInfo.label}</span></div>
+<div class="det-row"><span class="det-label" style="color:#ff88ff">Transformation</span><span class="det-val" style="color:#ff88ff">${SUIT_EMOJI[allInvInfo.before]} → ${SUIT_EMOJI[allInvInfo.result]}</span></div>`;
   }
 
   detailsHTML+=`
-<div class="det-row"><span class="det-label">Attribution P1/P2</span><span class="det-val det-result">${pLabel}</span></div>
-<div class="det-row"><span class="det-label">RÉSULTAT FINAL</span><span class="det-val det-result">#N${r.nextNum} — ${SUIT_EMOJI[displaySuit]} ${pLabel}</span></div>`;
+<hr class="det-sep">
+<div class="det-row"><span class="det-label">RÉSULTAT FINAL${allInverseActive?' (MODE INVERSÉE)':''}</span><span class="det-val det-result">#N${r.nextNum} — ${SUIT_EMOJI[displaySuit]} ${SUIT_NAMES[displaySuit]}</span></div>`;
 
   document.getElementById('details-body').innerHTML=detailsHTML;
 
@@ -999,8 +1015,11 @@ function renderResult(r){
 }
 
 function copyPrediction(){
-  const text = document.getElementById('res-suit-label').textContent;
-  navigator.clipboard.writeText(text).then(()=>{
+  const num=document.getElementById('res-num').textContent;
+  const suit=document.getElementById('res-suit-label').textContent;
+  const emoji=Object.entries(SUIT_NAMES).find(([,v])=>v===suit)?.[0]||'';
+  const modeTag=allInverseActive?' [ALL INVERSE]':'';
+  navigator.clipboard.writeText(`${num} ${emoji} ${suit}${modeTag}`).then(()=>{
     const btn=document.getElementById('btn-copy');
     btn.textContent='✓ COPIÉ';btn.classList.add('copied');
     setTimeout(()=>{btn.textContent='⧉ COPIER LA PRÉDICTION';btn.classList.remove('copied');},1800);
