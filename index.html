@@ -139,6 +139,20 @@
 
   #result-zone{display:none}
 
+  .demarrer-wrap{margin-top:16px;padding-top:16px;border-top:1px dashed var(--border)}
+  .btn-demarrer{
+    width:100%;padding:16px;border-radius:5px;cursor:pointer;
+    background:linear-gradient(135deg,#3a0000,#5c0000);
+    border:1px solid #ff3333;color:#ffdede;
+    font-family:'Cinzel',serif;font-size:1rem;font-weight:700;letter-spacing:.1em;
+    animation:pulse-red 1.8s ease-in-out infinite;
+  }
+  .btn-demarrer:hover{box-shadow:0 0 26px #ff333388}
+  .btn-demarrer:disabled{opacity:.5;animation:none;cursor:wait}
+  @keyframes pulse-red{0%,100%{box-shadow:0 0 12px #ff333355}50%{box-shadow:0 0 26px #ff3333aa}}
+  .demarrer-desc{font-size:.72rem;color:var(--ivory-dim);text-align:center;margin-top:8px;line-height:1.5}
+  .demarrer-status{font-size:.78rem;color:#ffbf80;text-align:center;margin-top:10px;min-height:1.2em}
+
   /* ─── HISTORIQUE ─── */
   .history-card{
     margin-top:26px;background:var(--card-bg);border:1px solid var(--border);
@@ -171,6 +185,7 @@
   .history-autoval.ok{border-color:var(--green-ok);color:#8fd6b3}
   .history-autoval.ko{border-color:var(--crimson);color:#e89aa3}
   .hist-tag.hist-brain{color:#9c7cff}
+  .hist-tag.hist-live{color:#ff6666;font-weight:700}
   .history-list{display:flex;flex-direction:column;gap:8px}
   .history-item{
     display:flex;align-items:center;gap:10px;background:var(--deep);
@@ -254,6 +269,8 @@
 
   .badge-range2{background:linear-gradient(135deg,#001a14,#00281e);border:1px solid #1a8a6a;border-left:3px solid #2ee0aa;color:#7ff0cc;font-weight:700;animation:flicker-range2 3s ease-in-out infinite;}
   @keyframes flicker-range2{0%,100%{box-shadow:0 0 8px #2ee0aa44}50%{box-shadow:0 0 18px #2ee0aa88}}
+  .badge-side2{background:linear-gradient(135deg,#1a0014,#2a0020);border:1px solid #a01a8a;border-left:3px solid #e03ac0;color:#f070d8;font-weight:700;animation:flicker-side2 3s ease-in-out infinite;}
+  @keyframes flicker-side2{0%,100%{box-shadow:0 0 8px #e03ac044}50%{box-shadow:0 0 18px #e03ac088}}
   .badge-side{background:linear-gradient(135deg,#1a1000,#2a1c00);border:1px solid #a67c1a;border-left:3px solid #e0a83a;color:#f0c070;font-weight:700;animation:flicker-side 3s ease-in-out infinite;}
   @keyframes flicker-side{0%,100%{box-shadow:0 0 10px #e0a83a44}50%{box-shadow:0 0 22px #e0a83a88}}
   .badge-selector{background:linear-gradient(135deg,#0a1a0a,#122012);border:1px solid #2a6a2a;border-left:3px solid #4caf50;color:#80e080;animation:flicker-green 3s ease-in-out infinite;}
@@ -385,6 +402,18 @@
       <button class="btn-auto" id="btn-live-auto" onclick="toggleLiveAutoRefresh()">AUTO REFRESH OFF</button>
     </div>
     <div class="live-source" id="live-source"><small>Dernière donnée chargée</small>Aucune donnée récupérée pour le moment.</div>
+
+    <div class="demarrer-wrap">
+      <button class="btn-demarrer" id="btn-demarrer-live" onclick="demarrerLive()">
+        🔴 DÉMARRER LIVE
+      </button>
+      <div class="demarrer-desc">
+        Charge les 150 derniers jeux du canal, recalibre le cerveau intelligent sur une base commune
+        (identique sur tous les appareils), et affiche les 15 dernières parties comme si elles avaient
+        déjà été jouées.
+      </div>
+      <div class="demarrer-status" id="demarrer-status"></div>
+    </div>
   </div>
 
 
@@ -395,6 +424,7 @@
     <div class="error-box" id="error-box"></div>
     <button class="btn-calc" id="btn-calc" onclick="calculate()">⬡ CALCULER LA PRÉDICTION ⬡</button>
   </div>
+
 
   <!-- BOUTON ALL INVERSE -->
   <div class="allinv-wrap">
@@ -465,6 +495,8 @@ let allInverseActive = false;
 let allInverseManual = false;  // true = toggled manually, false = driven by auto-milieu
 let lastCalcResult   = null;
 let brainActive      = true;   // cerveau intelligent actif par défaut
+let telegramHistoryCache = [];  // 150 derniers jeux chargés depuis Telegram (source commune, identique sur tous les appareils)
+let globalBacktestStats  = null; // stats de fiabilité recalculées à partir de cette source commune
 
 // ══════════════════════════════════════════════════════
 //  HISTORIQUE DES PRÉDICTIONS (persisté localStorage)
@@ -561,57 +593,119 @@ function showAutoValidationFeedback(entry){
   setTimeout(()=>{ box.style.display='none'; }, 8000);
 }
 
+// ── Prédiction déterministe "brute" : Algo 1 + Algo 2 (range 900-1441) + inversion P1/P2 (digits)
+//    SANS ALL INVERSE (choix manuel) ni CERVEAU (pour servir de référence stable/rejouable identique partout)
+function deterministicPredict(raw){
+  const r = runCalc(raw);
+  let suit = r.finalSuit;
+  const rangeInv = applyRangeInverse(suit, r.nextNum);
+  if(rangeInv.applied) suit = rangeInv.after;
+  let side = computeSide(r.avantDernier, r.dernierDigit);
+  const sideInv = applySideDigitInverse(side, r.nextNum);
+  if(sideInv.applied) side = sideInv.after;
+  return {nextNum:r.nextNum, suit, side};
+}
+
+function actualOutcomeSuits(gameRecord, side){
+  const parsed = parseGame(gameRecord.normalized || gameRecord.raw_text);
+  const cards = side==='P2' ? parsed.p2 : parsed.p1;
+  if(!cards || !cards.length) return null;
+  return new Set(cards.map(c=>c.suit));
+}
+
+// Rejoue l'algorithme sur les N derniers jeux réels du canal Telegram (identiques pour
+// tout le monde) afin de donner au cerveau intelligent une base de référence commune,
+// indépendante de l'historique propre à chaque téléphone.
+function computeGlobalBacktestStats(history, windowGames){
+  const SUITS=['♠️','♥️','♦️','♣️'];
+  const perSuit={}; SUITS.forEach(s=>perSuit[s]={total:0,valid:0});
+  const results=[];
+  for(let i=1;i<history.length;i++){
+    const prev=history[i-1], curr=history[i];
+    let pred;
+    try{ pred=deterministicPredict(prev.normalized || prev.raw_text); }catch(e){ continue; }
+    if(pred.nextNum !== curr.game_number) continue; // trou dans la numérotation du canal
+    let actualSuits;
+    try{ actualSuits=actualOutcomeSuits(curr, pred.side); }catch(e){ continue; }
+    if(!actualSuits) continue;
+    const status = actualSuits.has(pred.suit) ? 'valid' : 'invalid';
+    results.push({gameNum:curr.game_number, suit:pred.suit, side:pred.side, status});
+  }
+  const recent = results.slice(-windowGames);
+  recent.forEach(e=>{
+    perSuit[e.suit].total++;
+    if(e.status==='valid') perSuit[e.suit].valid++;
+  });
+  return {perSuit, sample:recent.length, results:recent};
+}
+
 // ── CERVEAU INTELLIGENT ──
-// Analyse les 10 dernières prédictions résolues (auto ou manuel) et décide
-// si la couleur candidate doit être remplacée par une couleur plus fiable en ce moment.
+// Combine les pertes locales (ce téléphone) ET les pertes constatées sur l'historique
+// principal (150 derniers jeux Telegram, recalculé via DÉMARRER LIVE) pour décider si la
+// couleur candidate doit être remplacée. Cette double base rend la décision cohérente
+// d'un appareil à l'autre, au lieu de dépendre uniquement des clics locaux.
 function computeBrainDecision(candidateSuit){
   const SUITS = ['♠️','♥️','♦️','♣️'];
-  const recent = loadHistory().filter(e=>e.status!==null).slice(0,10); // plus récent en premier
 
-  const perSuit = {};
-  SUITS.forEach(s=>perSuit[s]={total:0,valid:0});
-  recent.forEach(e=>{
-    if(!perSuit[e.suitKey]) return;
-    perSuit[e.suitKey].total++;
-    if(e.status==='valid') perSuit[e.suitKey].valid++;
+  const recentLocal = loadHistory().filter(e=>e.status!==null).slice(0,10);
+  const localPerSuit = {}; SUITS.forEach(s=>localPerSuit[s]={total:0,valid:0});
+  recentLocal.forEach(e=>{
+    if(!localPerSuit[e.suitKey]) return;
+    localPerSuit[e.suitKey].total++;
+    if(e.status==='valid') localPerSuit[e.suitKey].valid++;
   });
-
-  // Échecs consécutifs sur la couleur candidate (dans l'ordre du plus récent au plus ancien)
-  let consecutiveMisses = 0;
-  for(const e of recent){
+  let localConsecutiveMisses = 0;
+  for(const e of recentLocal){
     if(e.suitKey !== candidateSuit) continue;
-    if(e.status==='invalid'){ consecutiveMisses++; } else { break; }
+    if(e.status==='invalid'){ localConsecutiveMisses++; } else { break; }
   }
 
-  const candStats = perSuit[candidateSuit] || {total:0,valid:0};
-  const candRate  = candStats.total>0 ? candStats.valid/candStats.total : null;
-
-  const triggerConsecutive = consecutiveMisses >= 3;
-  const triggerRate = (candStats.total >= 3 && candRate !== null && candRate < 0.30);
-
-  if(!triggerConsecutive && !triggerRate){
-    return {triggered:false, perSuit, consecutiveMisses, candRate};
+  const globalPerSuit = (globalBacktestStats && globalBacktestStats.perSuit) || {};
+  let globalConsecutiveMisses = 0;
+  if(globalBacktestStats && globalBacktestStats.results){
+    for(let i=globalBacktestStats.results.length-1;i>=0;i--){
+      const e = globalBacktestStats.results[i];
+      if(e.suit !== candidateSuit) continue;
+      if(e.status==='invalid'){ globalConsecutiveMisses++; } else { break; }
+    }
   }
 
-  // Cherche la meilleure couleur alternative (taux de réussite récent le plus élevé, échantillon suffisant)
-  let best = null;
+  function combined(suit){
+    const l = localPerSuit[suit] || {total:0,valid:0};
+    const g = globalPerSuit[suit] || {total:0,valid:0};
+    return {total:l.total+g.total, valid:l.valid+g.valid};
+  }
+  const candCombined = combined(candidateSuit);
+  const candRate = candCombined.total>0 ? candCombined.valid/candCombined.total : null;
+
+  const triggerLocal   = localConsecutiveMisses  >= 3;
+  const triggerGlobal  = globalConsecutiveMisses >= 4;
+  const triggerRate    = (candCombined.total >= 4 && candRate !== null && candRate < 0.30);
+
+  if(!triggerLocal && !triggerGlobal && !triggerRate){
+    return {triggered:false, localConsecutiveMisses, globalConsecutiveMisses, candRate};
+  }
+
+  let best=null;
   SUITS.forEach(s=>{
     if(s===candidateSuit) return;
-    const st = perSuit[s];
-    if(st.total < 2) return; // échantillon trop faible pour être fiable
-    const rate = st.valid/st.total;
-    if(!best || rate > best.rate || (rate===best.rate && st.total>best.total)){
-      best = {suit:s, rate, total:st.total};
+    const c = combined(s);
+    if(c.total < 3) return; // échantillon combiné trop faible
+    const rate = c.valid/c.total;
+    if(!best || rate>best.rate || (rate===best.rate && c.total>best.total)){
+      best = {suit:s, rate, total:c.total};
     }
   });
 
   if(!best){
-    return {triggered:false, perSuit, consecutiveMisses, candRate, reason:'Dérive détectée mais pas assez de données sur les autres couleurs pour basculer en sécurité.'};
+    return {triggered:false, localConsecutiveMisses, globalConsecutiveMisses, candRate,
+      reason:'Dérive détectée mais données combinées (local+Telegram) insuffisantes pour basculer en sécurité.'};
   }
 
   const reasonParts = [];
-  if(triggerConsecutive) reasonParts.push(`${consecutiveMisses} échecs d'affilée sur ${SUIT_EMOJI[candidateSuit]}`);
-  if(triggerRate) reasonParts.push(`taux ${Math.round(candRate*100)}% sur ${candStats.total} derniers ${SUIT_EMOJI[candidateSuit]}`);
+  if(triggerLocal)  reasonParts.push(`${localConsecutiveMisses} échecs locaux d'affilée sur ${SUIT_EMOJI[candidateSuit]}`);
+  if(triggerGlobal) reasonParts.push(`${globalConsecutiveMisses} échecs Telegram d'affilée sur ${SUIT_EMOJI[candidateSuit]}`);
+  if(triggerRate)   reasonParts.push(`taux combiné ${Math.round(candRate*100)}% sur ${candCombined.total} (local+Telegram)`);
 
   return {
     triggered:true,
@@ -619,7 +713,7 @@ function computeBrainDecision(candidateSuit){
     overrideRate: best.rate,
     overrideSample: best.total,
     reason: reasonParts.join(' + '),
-    perSuit, consecutiveMisses, candRate
+    localConsecutiveMisses, globalConsecutiveMisses, candRate
   };
 }
 
@@ -656,7 +750,7 @@ function renderHistory(){
     <div class="history-item ${statusClass}">
       <span class="hist-num">#N${e.gameNum}</span>
       <span class="hist-suit" style="color:${red?'#cc4444':'var(--ivory)'}">${emoji}</span>
-      <span class="hist-label">${e.side}${e.baseSuit?` <span class="hist-tag hist-brain">🧠</span>`:''}${e.autoResolved?` <span class="hist-tag">auto</span>`:''}</span>
+      <span class="hist-label">${e.side}${e.baseSuit?` <span class="hist-tag hist-brain">🧠</span>`:''}${e.source==='live-seed'?` <span class="hist-tag hist-live">🔴 LIVE</span>`:(e.autoResolved?` <span class="hist-tag">auto</span>`:'')}</span>
       <div class="hist-actions">
         <button class="hist-btn valid-btn ${e.status==='valid'?'active':''}" title="Validée chez le joueur" onclick="setHistoryStatus('${e.id}','valid')">✓</button>
         <button class="hist-btn invalid-btn ${e.status==='invalid'?'active':''}" title="Non passée" onclick="setHistoryStatus('${e.id}','invalid')">✕</button>
@@ -692,6 +786,20 @@ function computeSide(avantDernier, dernierDigit){
   } else {
     return dernierBas ? 'P2' : 'P1';
   }
+}
+
+// ── Inversion P1<>P2 pour les n° de jeu 1000-1441 (4 chiffres) dont le
+//    2ème ET le 3ème chiffre (en partant de la gauche) sont impairs.
+//    Le reste (Algo 2 ♠️♦️♣️♥️) est inchangé.
+function applySideDigitInverse(side, nextNum){
+  if(nextNum < 1000 || nextNum > 1441) return {applied:false, before:side, after:side, digit2:null, digit3:null};
+  const s = String(nextNum);
+  const digit2 = parseInt(s[1],10);
+  const digit3 = parseInt(s[2],10);
+  const bothImpair = (digit2 % 2 !== 0) && (digit3 % 2 !== 0);
+  if(!bothImpair) return {applied:false, before:side, after:side, digit2, digit3};
+  const after = side==='P1' ? 'P2' : 'P1';
+  return {applied:true, before:side, after, digit2, digit3};
 }
 
 // ══════════════════════════════════════════════════════
@@ -1217,7 +1325,9 @@ function renderResult(r){
     }
   }
 
-  const side = computeSide(r.avantDernier, r.dernierDigit);
+  let side = computeSide(r.avantDernier, r.dernierDigit);
+  const sideInvInfo = applySideDigitInverse(side, r.nextNum);
+  if(sideInvInfo.applied) side = sideInvInfo.after;
 
   document.getElementById('res-num').textContent=`#N${r.nextNum}`;
   const red=isRed(displaySuit);
@@ -1253,7 +1363,8 @@ function renderResult(r){
 
   const badges=[
     `<div class="badge badge-range2">${rangeInvInfo.applied?'🔀':'⬛'} ALGO 2 (900-1441) — #N${r.nextNum} ${rangeInvInfo.applied?`DANS LA PLAGE → INVERSION ${SUIT_EMOJI[rangeInvInfo.before]} → ${SUIT_EMOJI[rangeInvInfo.after]}`:'HORS PLAGE — INACTIF'}</div>`,
-    `<div class="badge badge-side">${side==='P1'?'👤':'🏦'} ATTRIBUTION — Av-dern=${r.avantDernier}(${r.avantDernier%2!==0?'IMPAIR':'PAIR'}) · Dernier=${r.dernierDigit}(${(r.dernierDigit>=1&&r.dernierDigit<=5)?'1-5':'6-0'}) → ${side==='P1'?'P1 (JOUEUR)':'P2 (BANQUIER)'}</div>`,
+    `<div class="badge badge-side">${sideInvInfo.before==='P1'?'👤':'🏦'} ATTRIBUTION BASE — Av-dern=${r.avantDernier}(${r.avantDernier%2!==0?'IMPAIR':'PAIR'}) · Dernier=${r.dernierDigit}(${(r.dernierDigit>=1&&r.dernierDigit<=5)?'1-5':'6-0'}) → ${sideInvInfo.before}</div>`,
+    `<div class="badge badge-side2">${sideInvInfo.applied?'🔁':'⬛'} INVERSION P1↔P2 (1000-1441) — ${sideInvInfo.digit2!==null?`2e chiffre=${sideInvInfo.digit2}(${sideInvInfo.digit2%2!==0?'IMPAIR':'PAIR'}) · 3e chiffre=${sideInvInfo.digit3}(${sideInvInfo.digit3%2!==0?'IMPAIR':'PAIR'})`:'HORS PLAGE'} → ${sideInvInfo.applied?`${sideInvInfo.before} → ${sideInvInfo.after}`:'INACTIF'}</div>`,
     `<div class="badge badge-selector">🎯 SÉLECTEUR — ${selectorLine}</div>`,
     `<div class="badge badge-algo">⚙ ALGO ${r.algoUsed} — BASE : ALGO ${ar.baseAlgo} · ${fibOverrideLabel} → ALGO FINAL : ALGO ${ar.algo}</div>`,
     `<div class="badge badge-parity">◈ PARITÉ — ALGO ${algoParity} · #N${r.nextNum} RÉDUIT = ${ar.reduceSteps.join(' → ')} → ${numParity}</div>`,
@@ -1415,6 +1526,82 @@ function setLiveSource(payload){
   const box = document.getElementById('live-source');
   if(!box) return;
   box.innerHTML = `<small>Dernière donnée chargée</small>${payload.normalized}<br><br><span style="color:#7ea6cc">Source : <a href="${payload.source_url}" target="_blank" rel="noopener" style="color:#7fb6e8">message Telegram</a> · ${payload.published_at || 'heure inconnue'}</span>`;
+}
+
+// ── DÉMARRER LIVE ──
+// 1) Charge les 150 derniers jeux réels du canal Telegram (source commune, identique
+//    sur tous les appareils) et recalibre le cerveau intelligent dessus.
+// 2) Rejoue les 15 dernières parties comme si elles avaient déjà été jouées : si une
+//    prédiction avait déjà été faite pour ce numéro, on la valide avec le vrai résultat ;
+//    sinon on comble rétroactivement avec la prédiction déterministe du système.
+async function demarrerLive(){
+  const btn = document.getElementById('btn-demarrer-live');
+  const statusBox = document.getElementById('demarrer-status');
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ CHARGEMENT DES 150 DERNIERS JEUX…';
+  statusBox.textContent = 'Connexion au canal Telegram…';
+
+  try{
+    const res = await fetch('/api/history?limit=150');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+
+    telegramHistoryCache = (data.games||[]).slice().sort((a,b)=>a.game_number-b.game_number);
+    if(telegramHistoryCache.length < 2) throw new Error('Pas assez de jeux récupérés depuis Telegram.');
+
+    statusBox.textContent = `${telegramHistoryCache.length} jeux chargés · calibrage du cerveau intelligent…`;
+    globalBacktestStats = computeGlobalBacktestStats(telegramHistoryCache, 50);
+
+    const n = telegramHistoryCache.length;
+    const startIdx = Math.max(1, n-15);
+    let validCount=0, invalidCount=0, skipped=0;
+    const list = loadHistory();
+
+    for(let i=startIdx;i<n;i++){
+      const prev = telegramHistoryCache[i-1];
+      const curr = telegramHistoryCache[i];
+      let pred;
+      try{ pred = deterministicPredict(prev.normalized || prev.raw_text); }catch(e){ skipped++; continue; }
+      if(pred.nextNum !== curr.game_number){ skipped++; continue; }
+
+      let entry = list.find(e=>e.gameNum===curr.game_number);
+      if(entry){
+        if(entry.status===null){
+          let actualSuits;
+          try{ actualSuits = actualOutcomeSuits(curr, entry.side||pred.side); }catch(e){ skipped++; continue; }
+          if(!actualSuits){ skipped++; continue; }
+          entry.status = actualSuits.has(entry.suitKey) ? 'valid' : 'invalid';
+          entry.autoResolved = true;
+          entry.status==='valid' ? validCount++ : invalidCount++;
+        }
+      } else {
+        let actualSuits;
+        try{ actualSuits = actualOutcomeSuits(curr, pred.side); }catch(e){ skipped++; continue; }
+        if(!actualSuits){ skipped++; continue; }
+        const st = actualSuits.has(pred.suit) ? 'valid' : 'invalid';
+        st==='valid' ? validCount++ : invalidCount++;
+        list.unshift({
+          id: Date.now()+'-'+Math.random().toString(36).slice(2,7),
+          gameNum: curr.game_number, suitKey: pred.suit, side: pred.side, modeTag:'',
+          baseSuit:null, brainReason:null, status:st, autoResolved:true, source:'live-seed',
+          ts:new Date().toISOString()
+        });
+      }
+    }
+    saveHistory(list);
+    renderHistory();
+
+    statusBox.textContent = `✅ LIVE démarré · ${telegramHistoryCache.length} jeux Telegram analysés · `
+      + `15 dernières parties : ${validCount} validées / ${invalidCount} ratées`
+      + `${skipped?` (${skipped} ignorées)`:''} · Cerveau intelligent recalibré sur base commune.`;
+  }catch(e){
+    statusBox.textContent = '✕ Erreur : '+e.message;
+  }finally{
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
 }
 
 async function fetchLatestTelegramGame(silent=false){

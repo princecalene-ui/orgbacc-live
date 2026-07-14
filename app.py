@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request
 from bs4 import BeautifulSoup
 import requests
 import re
@@ -79,6 +79,85 @@ def fetch_latest_game():
 def api_latest_game():
     try:
         return jsonify(fetch_latest_game())
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+def fetch_history(limit=150):
+    """Récupère jusqu'à `limit` jeux passés en paginant sur t.me/s/<canal>?before=<id>."""
+    session = requests.Session()
+    games = []
+    seen_ids = set()
+    before = None
+    pages_guard = 0
+
+    while len(games) < limit and pages_guard < 30:
+        pages_guard += 1
+        url = CHANNEL_URL if before is None else f'{CHANNEL_URL}?before={before}'
+        res = session.get(url, headers={'User-Agent': USER_AGENT}, timeout=20)
+        res.raise_for_status()
+        soup = BeautifulSoup(res.text, 'html.parser')
+        messages = soup.select('.tgme_widget_message_wrap')
+        if not messages:
+            break
+
+        page_numeric_ids = []
+        for msg in messages:
+            post_id = msg.get('data-post')
+            if not post_id:
+                continue
+            try:
+                numeric_id = int(post_id.split('/')[-1])
+            except ValueError:
+                continue
+            page_numeric_ids.append(numeric_id)
+
+            if post_id in seen_ids:
+                continue
+            seen_ids.add(post_id)
+
+            text_el = msg.select_one('.tgme_widget_message_text')
+            if not text_el:
+                continue
+            raw_text = text_el.get_text(' ', strip=True)
+            if '#N' not in raw_text:
+                continue
+            normalized = normalize_message_text(raw_text)
+            game_match = GAME_RE.search(normalized)
+            if not game_match:
+                continue
+            date_el = msg.select_one('time')
+            games.append({
+                'message_id': post_id,
+                'message_numeric_id': numeric_id,
+                'game_number': int(game_match.group(1)),
+                'raw_text': raw_text,
+                'normalized': normalized,
+                'published_at': date_el.get('datetime') if date_el else None,
+            })
+
+        if not page_numeric_ids:
+            break
+        oldest_on_page = min(page_numeric_ids)
+        if before is not None and oldest_on_page >= before:
+            break  # plus de progression possible, on arrête pour éviter une boucle infinie
+        before = oldest_on_page
+        if len(messages) < 20:
+            break  # dernière page atteinte
+
+    games.sort(key=lambda g: g['message_numeric_id'])  # chronologique : plus ancien -> plus récent
+    if len(games) > limit:
+        games = games[-limit:]
+    return games
+
+
+@app.get('/api/history')
+def api_history():
+    limit = request.args.get('limit', default=150, type=int)
+    limit = max(1, min(limit, 200))
+    try:
+        games = fetch_history(limit)
+        return jsonify({'games': games, 'count': len(games)})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
