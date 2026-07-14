@@ -1544,8 +1544,13 @@ async function demarrerLive(){
 
   try{
     const res = await fetch('/api/history?limit=150');
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const data = await res.json();
+    let data = null;
+    try{ data = await res.json(); }catch(parseErr){ /* réponse non-JSON */ }
+    if(!res.ok){
+      const serverMsg = data && data.error ? data.error : `HTTP ${res.status}`;
+      throw new Error(serverMsg);
+    }
+    if(!data) throw new Error('Réponse serveur vide ou illisible');
     if(data.error) throw new Error(data.error);
 
     telegramHistoryCache = (data.games||[]).slice().sort((a,b)=>a.game_number-b.game_number);
@@ -1610,8 +1615,12 @@ async function fetchLatestTelegramGame(silent=false){
     if(btn && !silent){ btn.classList.add('loading'); btn.textContent='⟳ SYNCHRO…'; }
     setLiveStatus('Connexion au canal Telegram en cours…');
     const res = await fetch('/api/latest-game');
-    if(!res.ok) throw new Error('Réponse serveur invalide');
-    const data = await res.json();
+    let data = null;
+    try{ data = await res.json(); }catch(parseErr){ /* réponse non-JSON (page d'erreur du serveur/proxy) */ }
+    if(!res.ok){
+      const serverMsg = data && data.error ? data.error : `HTTP ${res.status}`;
+      throw new Error(serverMsg);
+    }
     if(!data || !data.normalized) throw new Error('Aucune donnée exploitable trouvée');
     document.getElementById('game-input').value = data.normalized;
     setLiveSource(data);

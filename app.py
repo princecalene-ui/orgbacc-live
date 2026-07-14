@@ -7,6 +7,27 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 CHANNEL_URL = 'https://t.me/s/statistika_baccara'
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36'
+REQUEST_HEADERS = {
+    'User-Agent': USER_AGENT,
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
+    'Referer': 'https://t.me/statistika_baccara',
+}
+
+
+def _get(url, timeout=20):
+    try:
+        res = requests.get(url, headers=REQUEST_HEADERS, timeout=timeout)
+    except requests.exceptions.Timeout:
+        raise RuntimeError('Le serveur Telegram n\'a pas répondu à temps (timeout).')
+    except requests.exceptions.ConnectionError:
+        raise RuntimeError('Impossible de joindre Telegram (connexion refusée ou réseau indisponible).')
+    if res.status_code in (403, 429):
+        raise RuntimeError(f'Telegram a bloqué la requête (HTTP {res.status_code}) — '
+                            'probablement un blocage temporaire de l\'IP du serveur. Réessaie dans quelques minutes.')
+    if res.status_code >= 400:
+        raise RuntimeError(f'Telegram a répondu une erreur HTTP {res.status_code}.')
+    return res
 
 app = Flask(__name__, static_folder=str(BASE_DIR), static_url_path='')
 
@@ -33,8 +54,7 @@ def normalize_message_text(text: str) -> str:
 
 
 def fetch_latest_game():
-    res = requests.get(CHANNEL_URL, headers={'User-Agent': USER_AGENT}, timeout=20)
-    res.raise_for_status()
+    res = _get(CHANNEL_URL)
     soup = BeautifulSoup(res.text, 'html.parser')
     messages = soup.select('.tgme_widget_message_wrap')
     if not messages:
@@ -85,7 +105,6 @@ def api_latest_game():
 
 def fetch_history(limit=150):
     """Récupère jusqu'à `limit` jeux passés en paginant sur t.me/s/<canal>?before=<id>."""
-    session = requests.Session()
     games = []
     seen_ids = set()
     before = None
@@ -94,8 +113,7 @@ def fetch_history(limit=150):
     while len(games) < limit and pages_guard < 30:
         pages_guard += 1
         url = CHANNEL_URL if before is None else f'{CHANNEL_URL}?before={before}'
-        res = session.get(url, headers={'User-Agent': USER_AGENT}, timeout=20)
-        res.raise_for_status()
+        res = _get(url)
         soup = BeautifulSoup(res.text, 'html.parser')
         messages = soup.select('.tgme_widget_message_wrap')
         if not messages:
